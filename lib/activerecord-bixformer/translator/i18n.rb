@@ -36,7 +36,7 @@ module ActiveRecord
         def normalize_scope_value(scope_value)
           return nil if scope_value.blank?
 
-          scope_value = scope_value.map(&:to_s).join(".") if scope_value.is_a?(Array)
+          scope_value = scope_value.map(&:to_s).join(".") if scope_value.is_a?(::Array)
 
           # delimiter が付いていたら削除
           scope_value.to_s.sub(/\A\./, '').sub(/\.\z/, '')

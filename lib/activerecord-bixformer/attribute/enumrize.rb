@@ -1,7 +1,7 @@
 module ActiveRecord
   module Bixformer
     module Attribute
-      class Enumrize < ActiveRecord::Bixformer::Attribute::Base
+      class Enumrize < ::ActiveRecord::Bixformer::Attribute::Base
         def make_export_value(active_record_value)
           return nil unless active_record_value
 

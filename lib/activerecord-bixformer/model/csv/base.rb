@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Model
       module Csv
-        class Base < ActiveRecord::Bixformer::Model::Base
+        class Base < ::ActiveRecord::Bixformer::Model::Base
           class << self
             def new_as_association_for_import(parent, association_name, options)
               model = self.class.new(association_name, options)
@@ -17,7 +17,7 @@ module ActiveRecord
             super
 
             # CSVカラム名の取得にはI18nを使う
-            @translator = ActiveRecord::Bixformer::Translator::I18n.new
+            @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
 
             @translator.settings = @modeler.translation_settings.dup
             @translator.model    = self
@@ -33,7 +33,7 @@ module ActiveRecord
                 csv_title(attribute_name)
               end,
               *@association_map.values.flat_map do |model_or_models|
-                models = model_or_models.is_a?(Array) ? model_or_models : [model_or_models]
+                models = model_or_models.is_a?(::Array) ? model_or_models : [model_or_models]
 
                 models.flat_map { |m| m.available_csv_titles }
               end

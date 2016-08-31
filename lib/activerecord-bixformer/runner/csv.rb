@@ -3,7 +3,7 @@ require 'csv'
 module ActiveRecord
   module Bixformer
     module Runner
-      class Csv < ActiveRecord::Bixformer::Runner::Base
+      class Csv < ::ActiveRecord::Bixformer::Runner::Base
         def initialize
           super(:csv)
         end
@@ -27,7 +27,7 @@ module ActiveRecord
               end
             end
 
-            raise ActiveRecord::Rollback unless errors.empty?
+            raise ::ActiveRecord::Rollback unless errors.empty?
           end
 
           errors.empty?
@@ -70,8 +70,8 @@ module ActiveRecord
 
         def make_error_message(e, index)
           case e
-          when ActiveRecord::RecordInvalid
-          when ActiveRecord::RecordNotFound
+          when ::ActiveRecord::RecordInvalid
+          when ::ActiveRecord::RecordNotFound
           else
           end
         end

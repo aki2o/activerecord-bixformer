@@ -1,3 +1,5 @@
+require 'active_record'
+
 module ActiveRecord
   module Bixformer
     module Runner
@@ -22,7 +24,7 @@ module ActiveRecord
         end
 
         def detect_modeler
-          available_modelers.first || "ActiveRecord::Bixformer::Modeler::#{@format.to_s.classify}::Base".constantize.new
+          available_modelers.first || "::ActiveRecord::Bixformer::Modeler::#{@format.to_s.classify}::Base".constantize.new
         end
       end
     end

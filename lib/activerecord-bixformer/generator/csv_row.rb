@@ -1,7 +1,7 @@
 module ActiveRecord
   module Bixformer
     module Generator
-      class CsvRow < ActiveRecord::Bixformer::Generator::Base
+      class CsvRow < ::ActiveRecord::Bixformer::Generator::Base
         private
 
         def association_generator
@@ -22,7 +22,7 @@ module ActiveRecord
 
         def generate_association_value(parent_model)
           parent_model.association_map.values.inject({}) do |association_value, model_or_models|
-            models = model_or_models.is_a?(Array) ? model_or_models : [model_or_models]
+            models = model_or_models.is_a?(::Array) ? model_or_models : [model_or_models]
 
             # 全関連レコードの生成結果を単一ハッシュにマージ
             association_value.merge(

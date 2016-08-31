@@ -49,7 +49,7 @@ module ActiveRecord
 
             parent_model.add_association(model_or_models)
 
-            if model_or_models.is_a?(Array)
+            if model_or_models.is_a?(::Array)
               model_or_models.each { |model| compile_model(model) }
             else
               compile_model(model_or_models)

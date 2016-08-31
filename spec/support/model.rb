@@ -1,3 +1,6 @@
+require 'active_record'
+require 'enumerize'
+
 class User < ActiveRecord::Base
   has_one :profile, class_name: 'UserProfile'
   has_many :posts

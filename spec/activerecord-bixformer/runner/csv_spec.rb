@@ -61,7 +61,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
 
     context "resource is a list of ActiveRecord" do
       let(:resource) do
-        user = User.build(account: 'y-taro', joined_at: Time.current)
+        user = User.new(account: 'y-taro', joined_at: Time.current)
         user.save!
 
         user.build_profile(name: 'Taro Yamada').save!

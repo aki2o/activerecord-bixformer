@@ -47,7 +47,7 @@ module ActiveRecord
                          end
 
           # Arrayで最後の要素がHashの場合、それは子要素の設定値なので、結果に含めない
-          config_value.pop if config_value.is_a?(Array) && config_value.last.is_a?(Hash)
+          config_value.pop if config_value.is_a?(::Array) && config_value.last.is_a?(::Hash)
 
           config_value || default_value
         end
@@ -55,9 +55,9 @@ module ActiveRecord
         def new_module_instance(module_type, name_or_instance, *initializers)
           name_or_instance = :base unless name_or_instance
 
-          name_or_instance = name_or_instance.to_s if name_or_instance.is_a?(Symbol)
+          name_or_instance = name_or_instance.to_s if name_or_instance.is_a?(::Symbol)
 
-          return name_or_instance unless name_or_instance.is_a?(String)
+          return name_or_instance unless name_or_instance.is_a?(::String)
 
           if initializers.size > 0
             find_module_constant(module_type, name_or_instance).new(*initializers)
@@ -86,9 +86,9 @@ module ActiveRecord
           key = keys.shift
 
           # config が Array なら、子要素は最後の要素にハッシュで定義してあるはず
-          config_map = config.is_a?(Array) ? config.last : config
+          config_map = config.is_a?(::Array) ? config.last : config
 
-          return nil unless config_map.is_a?(Hash)
+          return nil unless config_map.is_a?(::Hash)
 
           find_nested_config_value(config_map[key], keys)
         end

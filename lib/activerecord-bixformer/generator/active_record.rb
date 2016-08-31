@@ -1,7 +1,7 @@
 module ActiveRecord
   module Bixformer
     module Generator
-      class ActiveRecord < ActiveRecord::Bixformer::Generator::Base
+      class ActiveRecord < ::ActiveRecord::Bixformer::Generator::Base
         private
 
         def association_generator
@@ -31,7 +31,7 @@ module ActiveRecord
           association_value_map = {}
 
           parent_model.association_map.each do |association_name, model_or_models|
-            association_value = if model_or_models.is_a?(Array)
+            association_value = if model_or_models.is_a?(::Array)
                                   model_or_models.map { |m| generate_model_value(m) }.reject { |v| has_valid_value?(v) }
                                 else
                                   generate_model_value(model_or_models)
@@ -78,9 +78,9 @@ module ActiveRecord
         end
 
         def has_valid_value?(array_or_hash)
-          if array_or_hash.is_a?(Hash)
+          if array_or_hash.is_a?(::Hash)
             ! array_or_hash.values.empty?
-          elsif array_or_hash.is_a?(Array)
+          elsif array_or_hash.is_a?(::Array)
             ! array_or_hash.empty?
           end
         end

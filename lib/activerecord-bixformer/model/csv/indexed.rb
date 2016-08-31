@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Model
       module Csv
-        class Indexed < ActiveRecord::Bixformer::Model::Csv::Base
+        class Indexed < ::ActiveRecord::Bixformer::Model::Csv::Base
           class << self
             def new_as_association_for_import(parent, association_name, options)
               limit_size = options[:size] || 1
