@@ -1,2 +1,8 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'activerecord/bixformer'
+require 'bundler/setup'
+require 'i18n'
+
+Bundler.require
+Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
+
+RSpec.configure do
+end

@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Activerecord::Bixformer do
+describe ActiveRecord::Bixformer do
   it 'has a version number' do
-    expect(Activerecord::Bixformer::VERSION).not_to be nil
+    expect(ActiveRecord::Bixformer::VERSION).not_to be nil
   end
 
   it 'does something useful' do

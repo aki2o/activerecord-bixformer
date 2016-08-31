@@ -1,0 +1,13 @@
+ja:
+  activerecord:
+    models:
+      user: ユーザ
+      user_profile: ユーザ情報
+      post: 投稿
+      tag: タグ
+    attributes:
+      user:
+        account: ログイン名
+        joined_at: 登録日時
+      user/profile:
+        name: 氏名
