@@ -13,16 +13,6 @@ module ActiveRecord
             end
           end
 
-          def setup_with_modeler(modeler)
-            super
-
-            # CSVカラム名の取得にはI18nを使う
-            @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
-
-            @translator.settings = @modeler.translation_settings.dup
-            @translator.model    = self
-          end
-
           def csv_title(attribute_name)
             @translator.translate_attribute(attribute_name)
           end

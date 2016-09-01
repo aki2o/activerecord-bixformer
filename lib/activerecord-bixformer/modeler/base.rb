@@ -11,7 +11,7 @@ module ActiveRecord
           {
             type: :base,
             identified_by: :id,
-            attributes: model_name.to_s.classify.constantize.attribute_names.map do |attribute_name|
+            attributes: model_name.to_s.camelize.constantize.attribute_names.map do |attribute_name|
               [attribute_name, :base]
             end.to_h,
             associations: {}
@@ -30,10 +30,17 @@ module ActiveRecord
           [:id]
         end
 
+        def translation_settings
+          {
+            root_scope: :activerecord,
+            extend_scopes: []
+          }
+        end
+
         def module_load_namespaces(module_type)
           [
-            "ActiveRecord::Bixformer::#{module_type.to_s.classify}::#{@format.to_s.classify}",
-            "ActiveRecord::Bixformer::#{module_type.to_s.classify}",
+            "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}::#{@format.to_s.camelize}",
+            "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}",
           ]
         end
 
@@ -70,12 +77,28 @@ module ActiveRecord
           name = :base unless name
 
           module_load_namespaces(module_type).each do |namespace|
-            constant = "#{namespace}::#{name.to_s.classify}".safe_constantize
+            constant = "#{namespace}::#{name.to_s.camelize}".safe_constantize
 
             return constant if constant
           end
 
-          return nil
+          error_message = "Not found module named #{name.to_s.camelize} in module_load_namespaces('#{module_type}')"
+
+          raise ::ArgumentError.new(error_message)
+        end
+
+        def parse_to_type_and_options(value)
+          type = value.is_a?(::Array) ? value.shift : value
+          
+          arguments = if value.is_a?(::Array) && value.size == 1 && value.first.is_a?(::Hash)
+                        value.first
+                      elsif value.is_a?(::Array)
+                        value
+                      else
+                        nil
+                      end
+
+          [type, arguments]
         end
 
         private
@@ -98,7 +121,7 @@ module ActiveRecord
 
           key = keys.shift
 
-          find_nested_config_value(config[:associations][key], keys)
+          find_entry_definitions(config[:associations][key], keys)
         end
       end
     end

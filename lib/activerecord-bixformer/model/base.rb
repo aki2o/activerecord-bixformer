@@ -8,7 +8,8 @@ module ActiveRecord
         attr_reader :name,
                     :parent,
                     :optional_attributes,
-                    :association_map
+                    :association_map,
+                    :translator
 
         class << self
           def new_as_association_for_import(parent, association_name, options)
@@ -16,21 +17,23 @@ module ActiveRecord
           end
 
           def new_as_association_for_export(parent, association_name, options)
-            model = self.class.new(association_name, options)
+            model = self.new(association_name, options)
 
-            model.data_source = parent.data_source.__send__(association_name) # parent.data_source is ActiveRecord::Base
+            model.data_source = parent.data_source && parent.data_source.__send__(association_name) # parent.data_source is ActiveRecord::Base
 
             unless model.data_source.is_a?(::ActiveRecord::Base)
               parent_name = model.parents.map(&:name).join('.')
 
-              raise ::ArgumentError.new("#{parent_name}.#{association_name} is not a ActiveRecord instance")
+              error_message = "#{parent_name}.#{association_name} is not a ActiveRecord instance"
+
+              raise ::ArgumentError.new(error_message)
             end
 
             model
           end
         end
 
-        def initialize(model_or_association_name, options = {})
+        def initialize(model_or_association_name, options)
           @name            = model_or_association_name
           @options         = options
           @association_map = {}
@@ -41,14 +44,22 @@ module ActiveRecord
 
           entry_definitions = @modeler.config_value_for(self, :entry_definitions, {})
 
-          @attribute_map = (entry_definitions[:attributes] || {}).map do |attribute_name, attribute_type|
-            attribute = @modeler.new_module_instance(:attribute, attribute_type, self, attribute_name)
+          @attribute_map = (entry_definitions[:attributes] || {}).map do |attribute_name, attribute_value|
+            attribute_type, attribute_options = @modeler.parse_to_type_and_options(attribute_value)
+
+            attribute = @modeler.new_module_instance(:attribute, attribute_type, self, attribute_name, attribute_options)
 
             [attribute_name, attribute]
           end.to_h
 
           @optional_attributes = @modeler.config_value_for(self, :optional_attributes, [])
           @default_value_map   = @modeler.config_value_for(self, :default_value_map, {})
+
+          # At present, translation function is only i18n
+          @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
+
+          @translator.settings = @modeler.translation_settings.dup
+          @translator.model    = self
         end
 
         def set_parent(model)
@@ -77,9 +88,9 @@ module ActiveRecord
 
         def activerecord_constant
           if @parent
-            @parent.activerecord_constant.reflections[@name.to_s].table_name.classify.constantize
+            @parent.activerecord_constant.reflections[@name.to_s].table_name.camelize.constantize
           else
-            @name.to_s.classify.constantize
+            @name.to_s.camelize.constantize
           end
         end
 

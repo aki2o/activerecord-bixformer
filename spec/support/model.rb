@@ -1,5 +1,7 @@
 require 'active_record'
 require 'enumerize'
+require 'wannabe_bool'
+require 'booletania'
 
 class User < ActiveRecord::Base
   has_one :profile, class_name: 'UserProfile'
@@ -18,17 +20,16 @@ end
 
 class Post < ActiveRecord::Base
   extend Enumerize
+  include Booletania
 
-  enumerize :status, in: %i( wip protected published )
+  enumerize :status, in: %i( wip protected published ), default: :wip
 
   belongs_to :user
 
   has_many :tags
-
-  validates :status, inclusion: { in: %i( wip protected published ) }
 end
 
-class Tags < ActiveRecord::Base
+class Tag < ActiveRecord::Base
   belongs_to :post
 
   validates :post_id, uniqueness: { scope: [:name] }

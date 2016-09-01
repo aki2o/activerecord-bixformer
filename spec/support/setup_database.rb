@@ -20,7 +20,7 @@ class CreateAllTables < ActiveRecord::Migration
       t.integer :user_id, null: false
       t.text :content
       t.string :status, null: false, default: 'wip'
-      t.boolean :private, null: false, default: true
+      t.boolean :secret, null: false, default: true
     end
 
     create_table :tags do |t|

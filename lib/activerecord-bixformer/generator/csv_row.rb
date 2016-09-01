@@ -9,8 +9,6 @@ module ActiveRecord
         end
 
         def generate_model_value(model)
-          model.generate_export_value_map
-
           generate_attributes_value(model).merge(generate_association_value(model))
         end
 

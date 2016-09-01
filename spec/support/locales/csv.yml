@@ -1,13 +1,35 @@
-ja:
+en:
   activerecord:
     models:
-      user: ユーザ
-      user_profile: ユーザ情報
-      post: 投稿
-      tag: タグ
+      user: User
+      user_profile: UserProfile
+      post: Post
+      tag: Tag
+      user/profile: UserProfile
+      user/posts: Post%{index}
+      user/posts/tags: Tag%{index}
     attributes:
       user:
-        account: ログイン名
-        joined_at: 登録日時
+        id: UserSystemCode
+        account: AccountName
+        joined_at: JoinTime
       user/profile:
-        name: 氏名
+        name: Name
+        age: Age
+      user/posts:
+        id: PostSystemCode%{index}
+        status: Status%{index}
+        secret: IsSecret%{index}
+      user/posts/tags:
+        name: TagName%{index}
+  enumerize:
+    post:
+      status:
+        wip: Write in Process
+        published: Now on show
+        protected: Edit disabled
+  booletania:
+    post:
+      secret:
+        'true': 'Yes'
+        'false': 'No'

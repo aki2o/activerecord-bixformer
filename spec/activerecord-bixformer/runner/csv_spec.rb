@@ -10,7 +10,7 @@ class SampleModeler < ActiveRecord::Bixformer::Modeler::Csv
       attributes: {
         id: :base,
         account: :base,
-        joined_at: :base
+        joined_at: [:time, format: :ymdhms]
       },
       associations: {
         profile: {
@@ -20,21 +20,15 @@ class SampleModeler < ActiveRecord::Bixformer::Modeler::Csv
           }
         },
         posts: {
-          type: :indexed,
-          arguments: {
-            size: 5,
-          },
+          type: [:indexed, size: 3],
           attributes: {
             id: :base,
             status: :enumerize,
-            private: :boolean
+            secret: :booletania
           },
           associations: {
             tags: {
-              type: :indexed,
-              arguments: {
-                size: 3,
-              },
+              type: [:indexed, size: 2],
               attributes: {
                 name: :base
               }
@@ -44,7 +38,6 @@ class SampleModeler < ActiveRecord::Bixformer::Modeler::Csv
       }
     }
   end
-
   def optional_attributes
     [
       :id,
@@ -60,13 +53,20 @@ describe ActiveRecord::Bixformer::Runner::Csv do
     let(:csv_options) { {} }
 
     context "resource is a list of ActiveRecord" do
+      let(:joined_at) { Time.current }
+
       let(:resource) do
-        user = User.new(account: 'y-taro', joined_at: Time.current)
+        user = User.new(account: 'y-taro', joined_at: joined_at)
         user.save!
 
-        user.build_profile(name: 'Taro Yamada').save!
+        user.build_profile(name: 'Taro Yamada', age: 24).save!
 
-        user.build_posts.save!
+        user.posts.build(status: :wip, secret: true).save!
+        user.posts.build(status: :published, secret: false).save!
+
+        user.posts.first.tags.build(name: 'Hoge').save!
+        user.posts.first.tags.build(name: 'Fuga').save!
+        user.posts.first.tags.build(name: 'Foo').save!
 
         [user]
       end

@@ -24,7 +24,7 @@ module ActiveRecord
         end
 
         def detect_modeler
-          available_modelers.first || "::ActiveRecord::Bixformer::Modeler::#{@format.to_s.classify}::Base".constantize.new
+          available_modelers.first || "::ActiveRecord::Bixformer::Modeler::#{@format.to_s.camelize}::Base".constantize.new
         end
       end
     end

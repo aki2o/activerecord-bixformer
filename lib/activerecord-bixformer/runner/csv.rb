@@ -16,7 +16,7 @@ module ActiveRecord
             modeler.new_module_instance(:generator, :active_record, modeler, csv_row).generate
           end
 
-          model_constant = modeler.model_name.to_s.classify.constantize
+          model_constant = modeler.model_name.to_s.camelize.constantize
 
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|

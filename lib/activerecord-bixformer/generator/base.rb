@@ -10,11 +10,11 @@ module ActiveRecord
         def compile
           return @model if @model
 
-          model_name      = @modeler.model_name
-          model_type      = resolve_model_type(@modeler.entry_definitions[:type], model_name)
-          model_arguments = @modeler.entry_definitions[:arguments] || {}
+          model_name                = @modeler.model_name
+          model_type, model_options = @modeler.parse_to_type_and_options(@modeler.entry_definitions[:type])
+          model_type                = resolve_model_type(model_type, model_name)
 
-          @model = @modeler.new_module_instance(:model, model_type, model_name, model_arguments)
+          @model = @modeler.new_module_instance(:model, model_type, model_name, model_options)
 
           @model.data_source = @data_source
 
@@ -39,12 +39,12 @@ module ActiveRecord
           association_definitions = @modeler.config_value_for(parent_model, :entry_definitions, {})[:associations] || {}
 
           association_definitions.each do |association_name, association_definition|
-            association_type      = resolve_model_type(association_definition[:type], association_name, parent_model)
-            association_constant  = @modeler.find_module_constant(:model, association_type)
-            association_arguments = association_definition[:arguments] || {}
+            association_type, association_options = @modeler.parse_to_type_and_options(association_definition[:type])
+            association_type                      = resolve_model_type(association_type, association_name, parent_model)
+            association_constant                  = @modeler.find_module_constant(:model, association_type)
 
             model_or_models = association_constant.__send__(
-              association_generator, parent_model, association_name, association_arguments
+              association_generator, parent_model, association_name, association_options
             )
 
             parent_model.add_association(model_or_models)
