@@ -20,11 +20,15 @@ module ActiveRecord
         private
 
         def available_modelers
+          if @modelers.empty?
+            raise ArgumentError.new "Not exist any available modelers. You have to regist modeler by add_modeler."
+          end
+
           @modelers
         end
 
         def detect_modeler
-          available_modelers.first || "::ActiveRecord::Bixformer::Modeler::#{@format.to_s.camelize}::Base".constantize.new
+          available_modelers.first
         end
       end
     end

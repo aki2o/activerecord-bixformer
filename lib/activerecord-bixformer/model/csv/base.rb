@@ -5,7 +5,7 @@ module ActiveRecord
         class Base < ::ActiveRecord::Bixformer::Model::Base
           class << self
             def new_as_association_for_import(parent, association_name, options)
-              model = self.class.new(association_name, options)
+              model = self.new(association_name, options)
 
               model.data_source = parent.data_source # parent.data_source is CSV::Row
 

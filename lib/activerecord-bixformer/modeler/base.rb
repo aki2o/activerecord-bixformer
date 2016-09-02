@@ -7,15 +7,12 @@ module ActiveRecord
         def model_name
         end
 
+        # type
+        # identified_by
+        # attributes
+        # associations
         def entry_definitions
-          {
-            type: :base,
-            identified_by: :id,
-            attributes: model_name.to_s.camelize.constantize.attribute_names.map do |attribute_name|
-              [attribute_name, :base]
-            end.to_h,
-            associations: {}
-          }
+          {}
         end
 
         def optional_attributes
@@ -27,7 +24,7 @@ module ActiveRecord
         end
 
         def primary_keys
-          [:id]
+          []
         end
 
         def translation_settings

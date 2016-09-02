@@ -7,6 +7,10 @@ module ActiveRecord
 
           active_record_value.to_s(format)
         end
+
+        def make_import_value(value)
+          Date.parse(value) rescue nil
+        end
       end
     end
   end
