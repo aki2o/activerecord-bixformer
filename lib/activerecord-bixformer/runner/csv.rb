@@ -12,6 +12,8 @@ module ActiveRecord
           modeler = detect_modeler
           errors  = []
 
+          csv_parse_options[:headers] = true
+
           model_attributes_list = ::CSV.parse(csv_data, csv_parse_options).map do |csv_row|
             modeler.new_module_instance(:generator, :active_record, modeler, csv_row).generate
           end

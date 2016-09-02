@@ -50,6 +50,34 @@ describe ActiveRecord::Bixformer::Runner::Csv do
   let(:modeler) { SampleModeler.new }
   let(:csv_options) { {} }
 
+  describe "#import" do
+    before { runner.add_modeler(modeler); runner.import(csv_data, csv_options) }
+
+    context "simple" do
+      let(:csv_data) do
+        <<EOS
+UserSystemCode,AccountName,JoinTime,Name,Age,PostSystemCode1,Status1,IsSecret1,UserPost1TagName1,UserPost1TagName2,PostSystemCode2,Status2,IsSecret2,UserPost2TagName1,UserPost2TagName2,PostSystemCode3,Status3,IsSecret3,UserPost3TagName1,UserPost3TagName2
+1,y-taro,2016/09/01 15:31:21,Taro Yamada,24,1,Write in Process,Yes,Foo,Fuga,2,Now on show,No,,,,,,,
+EOS
+      end
+
+      it do
+        expect(User.all.size).to eq 1
+        expect(User.all.first.account).to eq 'y-taro'
+        expect(User.all.first.joined_at).to eq Time.new(2016, 9, 1, 15, 31, 21, "+00:00")
+        expect(User.all.first.profile.name).to eq 'Taro Yamada'
+        expect(User.all.first.profile.age).to eq 24
+        expect(User.all.first.posts.size).to eq 2
+        expect(User.all.first.posts[0].status).to eq :wip
+        expect(User.all.first.posts[1].status).to eq :published
+        expect(User.all.first.posts[0].secret).to be_truthy
+        expect(User.all.first.posts[1].secret).to be_falsey
+        expect(User.all.first.posts[0].tags.size).to eq 2
+        expect(User.all.first.posts[1].tags.size).to eq 0
+      end
+    end
+  end
+
   describe "#export" do
     subject { runner.add_modeler(modeler); runner.export(resource, csv_options) }
 
@@ -80,24 +108,6 @@ UserSystemCode,AccountName,JoinTime,Name,Age,PostSystemCode1,Status1,IsSecret1,U
 EOS
 
         is_expected.to eq expect_value
-      end
-    end
-  end
-
-  describe "#import" do
-    before { runner.add_modeler(modeler); runner.import(csv_data, csv_options) }
-
-    context "simple" do
-      let(:csv_data) do
-        <<EOS
-UserSystemCode,AccountName,JoinTime,Name,Age,PostSystemCode1,Status1,IsSecret1,UserPost1TagName1,UserPost1TagName2,PostSystemCode2,Status2,IsSecret2,UserPost2TagName1,UserPost2TagName2,PostSystemCode3,Status3,IsSecret3,UserPost3TagName1,UserPost3TagName2
-1,y-taro,2016/09/01 15:31:21,Taro Yamada,24,1,Write in Process,Yes,Foo,Fuga,2,Now on show,No,,,,,,,
-EOS
-      end
-      let(:csv_options) { { headers: true } }
-
-      it do
-        expect(User.all.size).to eq 1
       end
     end
   end
