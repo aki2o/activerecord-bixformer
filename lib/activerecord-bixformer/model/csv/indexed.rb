@@ -5,6 +5,7 @@ module ActiveRecord
         class Indexed < ::ActiveRecord::Bixformer::Model::Csv::Base
           class << self
             def new_as_association_for_import(parent, association_name, options)
+              options    = options.is_a?(Hash) ? options : {}
               limit_size = options[:size] || 1
 
               (1..limit_size).map do |index|
@@ -17,6 +18,7 @@ module ActiveRecord
             end
 
             def new_as_association_for_export(parent, association_name, options)
+              options      = options.is_a?(Hash) ? options : {}
               limit_size   = options[:size] || 1
               associations = parent.data_source ? parent.data_source.__send__(association_name).to_a : []
 

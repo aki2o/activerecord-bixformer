@@ -9,6 +9,7 @@ Bundler.require
 
 require "#{File.dirname(__FILE__)}/support/setup_database.rb"
 require "#{File.dirname(__FILE__)}/support/model.rb"
+Dir["#{File.dirname(__FILE__)}/support/samples/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
   I18n.backend = I18n::Backend::Simple.new

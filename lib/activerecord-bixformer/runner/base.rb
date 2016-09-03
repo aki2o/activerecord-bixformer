@@ -13,7 +13,9 @@ module ActiveRecord
 
         def add_modeler(*modelers)
           modelers.each do |modeler|
-            modeler.format = @format
+            unless modeler.format.to_s == @format.to_s
+              raise ArgumentError.new "modeler format unmatches to #{@format} as runner format : #{modeler.format}"
+            end
 
             @modelers.push modeler
           end

@@ -7,6 +7,7 @@ class CreateAllTables < ActiveRecord::Migration
       t.string :account, null: false
       t.datetime :joined_at, null: false
     end
+    add_index :users, [:account], unique: true
 
     create_table :user_profiles do |t|
       t.integer :user_id, null: false

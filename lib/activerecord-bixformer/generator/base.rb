@@ -66,6 +66,10 @@ module ActiveRecord
             model_name
           end
         end
+
+        def association_generator
+          raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
+        end
       end
     end
   end

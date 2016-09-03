@@ -2,7 +2,11 @@ module ActiveRecord
   module Bixformer
     module Modeler
       class Base
-        attr_accessor :format
+        attr_reader :format
+
+        def initialize(format)
+          @format = format
+        end
 
         def model_name
         end
@@ -83,8 +87,8 @@ module ActiveRecord
         end
 
         def parse_to_type_and_options(value)
-          type = value.is_a?(::Array) ? value.shift : value
-          
+          type = value.is_a?(::Array) ? value.dup.shift : value
+
           arguments = if value.is_a?(::Array) && value.size == 1 && value.first.is_a?(::Hash)
                         value.first
                       elsif value.is_a?(::Array)
