@@ -6,6 +6,9 @@ class User < ActiveRecord::Base
   has_one :profile, class_name: 'UserProfile'
   has_many :posts
 
+  accepts_nested_attributes_for :profile
+  accepts_nested_attributes_for :posts
+
   validates :account, presence: true
   validates :joined_at, presence: true
 end
@@ -26,6 +29,8 @@ class Post < ActiveRecord::Base
   belongs_to :user
 
   has_many :tags
+
+  accepts_nested_attributes_for :tags
 end
 
 class Tag < ActiveRecord::Base

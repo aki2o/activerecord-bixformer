@@ -13,7 +13,7 @@ module ActiveRecord
 
         class << self
           def new_as_association_for_import(parent, association_name, options)
-            raise ::NotImplementedError.new("You must implement #{self.class}##{__method__}")
+            raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
           end
 
           def new_as_association_for_export(parent, association_name, options)
@@ -24,9 +24,7 @@ module ActiveRecord
             unless model.data_source.is_a?(::ActiveRecord::Base)
               parent_name = model.parents.map(&:name).join('.')
 
-              error_message = "#{parent_name}.#{association_name} is not a ActiveRecord instance"
-
-              raise ::ArgumentError.new(error_message)
+              raise ::ArgumentError.new "#{parent_name}.#{association_name} is not a ActiveRecord instance"
             end
 
             model
@@ -128,7 +126,7 @@ module ActiveRecord
         end
 
         def make_import_value(attribute_name)
-          fail ::NotImplementedError.new("You must implement #{self.class}##{__method__}")
+          raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
         end
       end
     end

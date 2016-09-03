@@ -4,6 +4,8 @@ module ActiveRecord
   module Bixformer
     module Runner
       class Base
+        attr_reader :errors
+
         def initialize(format)
           @format   = format
           @modelers = []

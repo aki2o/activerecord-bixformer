@@ -10,7 +10,7 @@ module ActiveRecord
 
         def import(csv_data, csv_parse_options = {})
           modeler = detect_modeler
-          errors  = []
+          @errors  = []
 
           csv_parse_options[:headers] = true
 
@@ -22,17 +22,18 @@ module ActiveRecord
 
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|
+              binding.pry
               begin
                 import_attributes(model_constant, model_attributes)
               rescue => e
-                errors << make_error_message(e, index)
+                @errors << make_error_message(e, index)
               end
             end
 
-            raise ::ActiveRecord::Rollback unless errors.empty?
+            raise ::ActiveRecord::Rollback unless @errors.empty?
           end
 
-          errors.empty?
+          @errors.empty?
         end
 
         def export(active_records_or_relation, csv_generate_options = {})
@@ -73,8 +74,11 @@ module ActiveRecord
         def make_error_message(e, index)
           case e
           when ::ActiveRecord::RecordInvalid
+            e.errors.full_messages.join(', ')
           when ::ActiveRecord::RecordNotFound
+            e.message
           else
+            e.message
           end
         end
       end
