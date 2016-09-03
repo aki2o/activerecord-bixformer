@@ -14,7 +14,8 @@ RSpec.configure do |config|
   I18n.backend = I18n::Backend::Simple.new
   I18n.backend.load_translations(Dir.glob("#{File.dirname(__FILE__)}/support/locales/*.yml"))
 
-  Time::DATE_FORMATS[:ymdhms] = '%Y/%m/%d %H:%M:%S'
+  Date::DATE_FORMATS[:ymd]    = '%Y %m %d'
+  Time::DATE_FORMATS[:ymdhms] = '%Y %m %d (%H:%M:%S)'
 
   config.before :suite do
     DatabaseRewinder.clean_all

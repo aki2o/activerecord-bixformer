@@ -40,5 +40,23 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
 
       it { is_expected.to eq nil }
     end
+
+    context "true value" do
+      let(:value) { 'Yes' }
+
+      it { is_expected.to eq true }
+    end
+
+    context "false value" do
+      let(:value) { 'No' }
+
+      it { is_expected.to eq false }
+    end
+
+    context "wrong value" do
+      let(:value) { 'true' }
+
+      it { is_expected.to eq nil }
+    end
   end
 end

@@ -21,7 +21,7 @@ class Post < ActiveRecord::Base
   extend Enumerize
   include Booletania
 
-  enumerize :status, in: %i( wip protected published ), default: :wip
+  enumerize :status, in: %i( wip protected published )
 
   belongs_to :user
 

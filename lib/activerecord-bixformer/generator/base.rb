@@ -61,7 +61,7 @@ module ActiveRecord
           return type_name unless type_name == :override
 
           if parent_model
-            parent_model.parents.map(&:name).join('') + parent_model.name + model_name
+            [*parent_model.parents.map(&:name), parent_model.name, model_name].join('::')
           else
             model_name
           end

@@ -79,9 +79,7 @@ module ActiveRecord
             return constant if constant
           end
 
-          error_message = "Not found module named #{name.to_s.camelize} in module_load_namespaces('#{module_type}')"
-
-          raise ::ArgumentError.new(error_message)
+          raise ::ArgumentError.new "Not found module named #{name.to_s.camelize} in module_load_namespaces('#{module_type}')"
         end
 
         def parse_to_type_and_options(value)
