@@ -35,6 +35,11 @@ EOS
         expect(model.association_map[:profile].attribute_map.keys).to eq [:name, :email, :age]
         expect(model.association_map[:posts]).to be_an_instance_of Array
         expect(model.association_map[:posts].size).to eq 3
+        expect(model.association_map[:posts].first.attribute_map.keys).to eq [:id, :content, :status, :secret]
+        expect(model.association_map[:posts].first.association_map.keys).to eq [:tags]
+        expect(model.association_map[:posts].first.association_map[:tags]).to be_an_instance_of Array
+        expect(model.association_map[:posts].first.association_map[:tags].size).to eq 2
+        expect(model.association_map[:posts].first.association_map[:tags].first.attribute_map.keys).to eq [:name]
       end
     end
   end
@@ -53,14 +58,12 @@ EOS
             { id: nil, content: "Hello!", status: "published", secret: nil,
               tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { id: nil, content: "Good bye!", status: "wip", secret: true,
-              tags_attributes: [] },
-            { id: nil, content: nil, status: nil, secret: nil,
               tags_attributes: [] }
           ]
         }
       end
 
-      it { is_expected.to eq nil }
+      it { is_expected.to eq expect_value }
     end
 
     context "has optional_attributes" do

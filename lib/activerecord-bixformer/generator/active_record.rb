@@ -77,11 +77,14 @@ module ActiveRecord
           model.activerecord_constant.primary_key
         end
 
-        def has_valid_value?(array_or_hash)
-          if array_or_hash.is_a?(::Hash)
-            ! array_or_hash.values.compact.empty?
-          elsif array_or_hash.is_a?(::Array)
-            ! array_or_hash.compact.empty?
+        def has_valid_value?(value)
+          # 空でない要素であるか or 空でない要素を含んでいるかどうか
+          if value.is_a?(::Hash)
+            value.values.any? { |v| has_valid_value?(v) }
+          elsif value.is_a?(::Array)
+            value.any? { |v| has_valid_value?(v) }
+          else
+            value.blank? ? false : true
           end
         end
       end
