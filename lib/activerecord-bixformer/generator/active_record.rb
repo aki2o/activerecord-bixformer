@@ -32,13 +32,13 @@ module ActiveRecord
 
           parent_model.association_map.each do |association_name, model_or_models|
             association_value = if model_or_models.is_a?(::Array)
-                                  model_or_models.map { |m| generate_model_value(m) }.reject { |v| ! has_valid_value?(v) }
+                                  model_or_models.map { |m| generate_model_value(m) }.reject { |v| ! valid_value?(v) }
                                 else
                                   generate_model_value(model_or_models)
                                 end
 
             # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
-            next if ! has_valid_value?(association_value) &&
+            next if ! valid_value?(association_value) &&
                     parent_model.optional_attributes.include?(association_name)
 
             association_value_map["#{association_name}_attributes".to_sym] = association_value
@@ -58,7 +58,7 @@ module ActiveRecord
           end.to_h
 
           # ユニーク条件は、必ず値がなければならない
-          return nil if unique_conditions.find { |_k, v| v.blank? }
+          return nil if unique_conditions.any? { |_k, v| ! valid_value?(v) }
 
           # 親のレコードが見つかっているなら、それも条件に追加する
           parent_id = model.parent&.activerecord_id
@@ -77,14 +77,19 @@ module ActiveRecord
           model.activerecord_constant.primary_key
         end
 
-        def has_valid_value?(value)
+        def valid_value?(value)
           # 空でない要素であるか or 空でない要素を含んでいるかどうか
-          if value.is_a?(::Hash)
-            value.values.any? { |v| has_valid_value?(v) }
-          elsif value.is_a?(::Array)
-            value.any? { |v| has_valid_value?(v) }
+          case value
+          when ::Hash
+            value.values.any? { |v| valid_value?(v) }
+          when ::Array
+            value.any? { |v| valid_value?(v) }
+          when ::String
+            ! value.blank?
+          when ::TrueClass, ::FalseClass
+            true
           else
-            value.blank? ? false : true
+            value ? true : false
           end
         end
       end

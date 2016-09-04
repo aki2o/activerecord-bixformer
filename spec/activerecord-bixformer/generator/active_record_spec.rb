@@ -55,7 +55,7 @@ EOS
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
           profile_attributes: { name: "Taro Import", email: nil, age: "13" },
           posts_attributes: [
-            { id: nil, content: "Hello!", status: "published", secret: nil,
+            { id: nil, content: "Hello!", status: "published", secret: false,
               tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { id: nil, content: "Good bye!", status: "wip", secret: true,
               tags_attributes: [] }
@@ -75,7 +75,7 @@ EOS
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
           profile_attributes: { name: "Taro Import", email: nil, age: "13" },
           posts_attributes: [
-            { content: "Hello!", status: "published", tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
+            { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { content: "Good bye!", status: "wip", secret: true }
           ]
         }

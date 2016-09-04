@@ -103,10 +103,12 @@ module ActiveRecord
           value_map = {}
 
           @attribute_map.keys.each do |attribute_name|
-            attribute_value = make_import_value(attribute_name) || @default_value_map[attribute_name]
+            attribute_value = make_import_value(attribute_name)
+
+            attribute_value = @default_value_map[attribute_name] unless valid_value?(attribute_value)
 
             # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
-            next if attribute_value.blank? &&
+            next if ! valid_value?(attribute_value) &&
                     @optional_attributes.include?(attribute_name)
 
             value_map[attribute_name] = attribute_value
@@ -128,6 +130,17 @@ module ActiveRecord
 
         def make_import_value(attribute_name)
           raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
+        end
+
+        def valid_value?(value)
+          case value
+          when ::String
+            ! value.blank?
+          when ::TrueClass, ::FalseClass
+            true
+          else
+            value ? true : false
+          end
         end
       end
     end
