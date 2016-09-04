@@ -9,14 +9,15 @@ class User < ActiveRecord::Base
   accepts_nested_attributes_for :profile
   accepts_nested_attributes_for :posts
 
-  validates :account, presence: true
+  validates :account, presence: true, uniqueness: true
   validates :joined_at, presence: true
 end
 
 class UserProfile < ActiveRecord::Base
+  self.primary_key = :user_id
+
   belongs_to :user
 
-  validates :user_id, uniqueness: true
   validates :name, presence: true
 end
 

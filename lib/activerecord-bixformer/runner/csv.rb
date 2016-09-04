@@ -60,8 +60,10 @@ module ActiveRecord
         end
 
         def import_attributes(model_constant, model_attributes)
-          if model_attributes[:id]
-            model_constant.find(model_attributes[:id]).update!(model_attributes)
+          identified_value = model_attributes[model_constant.primary_key]
+
+          if identified_value
+            model_constant.find(identified_value).update!(model_attributes)
           else
             model_constant.new(model_attributes).save!
           end

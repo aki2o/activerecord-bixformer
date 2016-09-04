@@ -1,5 +1,5 @@
 en:
-  activerecord:
+  bixformer:
     models:
       user: User
       user_profile: UserProfile
@@ -15,11 +15,13 @@ en:
         joined_at: JoinTime
       user/profile:
         name: Name
+        email: E-mail
         age: Age
       user/posts:
         id: PostSystemCode%{index}
         status: Status%{index}
         secret: IsSecret%{index}
+        content: Body%{index}
       user/posts/tags:
         name: TagName%{index}
   enumerize:

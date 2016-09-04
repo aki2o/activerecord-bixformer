@@ -7,15 +7,15 @@ class CreateAllTables < ActiveRecord::Migration
       t.string :account, null: false
       t.datetime :joined_at, null: false
     end
-    add_index :users, [:account], unique: true
+    add_index :users, :account, unique: true
 
-    create_table :user_profiles do |t|
+    create_table :user_profiles, id: false do |t|
       t.integer :user_id, null: false
       t.string :name, null: false
       t.string :email
       t.integer :age
     end
-    add_index :user_profiles, [:user_id], unique: true
+    add_index :user_profiles, :user_id, unique: true
 
     create_table :posts do |t|
       t.integer :user_id, null: false

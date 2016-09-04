@@ -7,6 +7,7 @@ module ActiveRecord
 
         attr_reader :name,
                     :parent,
+                    :attribute_map,
                     :optional_attributes,
                     :association_map,
                     :translator

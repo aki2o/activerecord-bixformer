@@ -12,7 +12,6 @@ module ActiveRecord
         end
 
         # type
-        # identified_by
         # attributes
         # associations
         def entry_definitions
@@ -27,13 +26,13 @@ module ActiveRecord
           {}
         end
 
-        def primary_keys
+        def unique_indexes
           []
         end
 
         def translation_settings
           {
-            root_scope: :activerecord,
+            root_scope: :bixformer,
             extend_scopes: []
           }
         end
@@ -87,7 +86,8 @@ module ActiveRecord
         end
 
         def parse_to_type_and_options(value)
-          type = value.is_a?(::Array) ? value.dup.shift : value
+          value = value.dup if value.is_a?(::Array) || value.is_a?(::Hash)
+          type  = value.is_a?(::Array) ? value.shift : value
 
           arguments = if value.is_a?(::Array) && value.size == 1 && value.first.is_a?(::Hash)
                         value.first
@@ -103,7 +103,7 @@ module ActiveRecord
         private
 
         def find_nested_config_value(config, keys)
-          return config if keys.empty?
+          return config ? config.dup : nil if keys.empty?
 
           key = keys.shift
 
@@ -116,7 +116,7 @@ module ActiveRecord
         end
 
         def find_entry_definitions(config, keys)
-          return config if keys.empty?
+          return config ? config.dup : nil if keys.empty?
 
           key = keys.shift
 

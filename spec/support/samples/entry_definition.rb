@@ -1,6 +1,6 @@
 class SampleEntryDefinition
   class << self
-    def user_all_using_indexed_to_has_many_association
+    def user_all_using_indexed_association
       {
         attributes: {
           id: :base,
