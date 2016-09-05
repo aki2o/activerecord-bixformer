@@ -7,7 +7,8 @@ describe ActiveRecord::Bixformer::Runner::Csv do
   let(:modeler_options) do
     {
       entry_definitions: entry_definitions,
-      optional_attributes: optional_attributes
+      optional_attributes: optional_attributes,
+      unique_indexes: unique_indexes
     }
   end
 
@@ -24,6 +25,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
     context "all" do
       let(:entry_definitions) { SampleEntryDefinition.user_all_using_indexed_association }
       let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+      let(:unique_indexes) { SampleUniqueIndex.user_all_default }
 
       context "new record" do
         let(:csv_data) do
@@ -56,7 +58,7 @@ EOS
 
       context "update record" do
         let(:user) { User.find_by(account: 'sample-taro') }
-        let(:joined_at) { Time.current }
+        let(:joined_at) { Time.new(2016, 9, 2, 15, 31, 21, "+09:00") }
 
         let(:csv_data) do
         <<EOS
@@ -78,7 +80,7 @@ EOS
 
           expect(imported_user.posts[0].content).to eq 'Good bye!' # changed
           expect(imported_user.posts[0].status).to eq :protected   # changed
-          expect(imported_user.posts[0].tags.size).to eq 2         # not deleted
+          expect(imported_user.posts[0].tags.size).to eq 3         # not deleted and appended
 
           expect(imported_user.posts[1].secret).to be_falsey       # changed
           expect(imported_user.posts[1].tags.size).to eq 1         # appended

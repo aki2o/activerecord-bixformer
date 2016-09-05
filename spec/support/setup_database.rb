@@ -9,7 +9,7 @@ class CreateAllTables < ActiveRecord::Migration
     end
     add_index :users, :account, unique: true
 
-    create_table :user_profiles, id: false do |t|
+    create_table :user_profiles do |t|
       t.integer :user_id, null: false
       t.string :name, null: false
       t.string :email

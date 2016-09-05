@@ -97,21 +97,14 @@ EOS
       end
 
       let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
-
-      let(:unique_indexes) do
-        [
-          posts: [
-            tags: [:post_id, :name]
-          ]
-        ]
-      end
+      let(:unique_indexes) { SampleUniqueIndex.user_all_default }
 
       let(:expect_value) do
         {
           id: "1",
           account: "sample-taro",
           joined_at: joined_at,
-          profile_attributes: { name: "Taro U Sample", email: nil, age: "60", user_id: "1" },
+          profile_attributes: { name: "Taro U Sample", email: nil, age: "60", user_id: "1", id: 1 },
           posts_attributes: [
             { id: "1", content: "Good bye!", status: "protected", secret: false, user_id: "1", tags_attributes: [{ name: "Foo", post_id: "1", id: 3 }] },
             { id: "2", content: nil, status: "wip", secret: false, user_id: "1", tags_attributes: [{ name: "Bar", post_id: "2" }] },

@@ -14,8 +14,6 @@ class User < ActiveRecord::Base
 end
 
 class UserProfile < ActiveRecord::Base
-  self.primary_key = :user_id
-
   belongs_to :user
 
   validates :name, presence: true
