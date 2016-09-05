@@ -96,11 +96,11 @@ module ActiveRecord
         def generate_export_value_map
           @attribute_map.keys.map do |attribute_name|
             [attribute_name, make_export_value(attribute_name)]
-          end.to_h
+          end.to_h.with_indifferent_access
         end
 
         def generate_import_value_map
-          value_map = {}
+          value_map = {}.with_indifferent_access
 
           @attribute_map.keys.each do |attribute_name|
             attribute_value = make_import_value(attribute_name)
@@ -109,7 +109,7 @@ module ActiveRecord
 
             # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
             next if ! valid_value?(attribute_value) &&
-                    @optional_attributes.include?(attribute_name)
+                    @optional_attributes.include?(attribute_name.to_s)
 
             value_map[attribute_name] = attribute_value
           end

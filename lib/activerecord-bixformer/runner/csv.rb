@@ -10,7 +10,7 @@ module ActiveRecord
 
         def import(csv_data, csv_parse_options = {})
           modeler = detect_modeler
-          @errors  = []
+          @errors = []
 
           csv_parse_options[:headers] = true
 
@@ -23,9 +23,9 @@ module ActiveRecord
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|
               begin
-                import_attributes(model_constant, model_attributes)
+                import_attributes(model_constant, model_attributes, index)
               rescue => e
-                @errors << make_error_message(e, index)
+                @errors << "Entry#{index}: #{e.message}"
               end
             end
 
@@ -58,29 +58,38 @@ module ActiveRecord
           generator.compile.available_csv_titles
         end
 
-        def import_attributes(model_constant, model_attributes)
+        def import_attributes(model_constant, model_attributes, index)
           identified_value = model_attributes[model_constant.primary_key]
 
-          if identified_value
-            model_constant.find(identified_value).update!(model_attributes)
-          else
-            model_constant.new(model_attributes).save!
+          # CSVで削除が可能だが、削除フラグは _destroy というattributesに入っており、こんなcolumnは存在しないので、このままだとエラーになる
+          # そのため、ここで要素から削除しておく
+          is_destroy = model_attributes.delete(:_destroy)
+
+          activerecord = if identified_value
+                           model_constant.find(identified_value)
+                         else
+                           model_constant.new(model_attributes)
+                         end
+
+          success = if identified_value
+                      if is_destroy
+                        activerecord.destroy
+                      else
+                        activerecord.update(model_attributes)
+                      end
+                    else
+                      activerecord.save
+                    end
+
+          unless success
+            @errors += activerecord.errors.full_messages.map do |msg|
+              "Entry#{index}: #{msg}"
+            end
           end
         end
 
         def export_attributes(csv_titles, model_attributes)
           csv_titles.map { |title| model_attributes[title] }
-        end
-
-        def make_error_message(e, index)
-          case e
-          when ::ActiveRecord::RecordInvalid
-            e.errors.full_messages.join(', ')
-          when ::ActiveRecord::RecordNotFound
-            e.message
-          else
-            e.message
-          end
         end
       end
     end

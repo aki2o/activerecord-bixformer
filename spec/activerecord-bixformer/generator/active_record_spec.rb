@@ -6,11 +6,13 @@ describe ActiveRecord::Bixformer::Generator::ActiveRecord do
   let(:modeler_options) do
     {
       entry_definitions: SampleEntryDefinition.user_all_using_indexed_association,
-      optional_attributes: optional_attributes
+      optional_attributes: optional_attributes,
+      unique_indexes: unique_indexes
     }
   end
 
   let(:optional_attributes) { [] }
+  let(:unique_indexes) { [] }
 
   let(:data_source) do
     csv_data = <<EOS
@@ -55,12 +57,10 @@ EOS
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
           profile_attributes: { name: "Taro Import", email: nil, age: "13" },
           posts_attributes: [
-            { id: nil, content: "Hello!", status: "published", secret: false,
-              tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
-            { id: nil, content: "Good bye!", status: "wip", secret: true,
-              tags_attributes: [] }
+            { id: nil, content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
+            { id: nil, content: "Good bye!", status: "wip", secret: true, tags_attributes: [] }
           ]
-        }
+        }.with_indifferent_access
       end
 
       it { is_expected.to eq expect_value }
@@ -78,7 +78,46 @@ EOS
             { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { content: "Good bye!", status: "wip", secret: true }
           ]
-        }
+        }.with_indifferent_access
+      end
+
+      it { is_expected.to eq expect_value }
+    end
+
+    context "exists record" do
+      let(:user) { User.find_by(account: 'sample-taro') }
+      let(:joined_at) { Time.new(2016, 9, 1, 15, 31, 21, "+09:00") }
+
+      let(:data_source) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{user.id},sample-taro,#{joined_at.to_s(:ymdhms)},Taro U Sample,"",60,#{user.posts[0].id},Good bye!,Edit disabled,No,Foo,,#{user.posts[1].id},"",Write in Process,No,Bar,,,New Post!,Write in Process,Yes,,
+EOS
+        CSV.parse(csv_data, headers: true).first
+      end
+
+      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+
+      let(:unique_indexes) do
+        [
+          posts: [
+            tags: [:post_id, :name]
+          ]
+        ]
+      end
+
+      let(:expect_value) do
+        {
+          id: "1",
+          account: "sample-taro",
+          joined_at: joined_at,
+          profile_attributes: { name: "Taro U Sample", email: nil, age: "60", user_id: "1" },
+          posts_attributes: [
+            { id: "1", content: "Good bye!", status: "protected", secret: false, user_id: "1", tags_attributes: [{ name: "Foo", post_id: "1", id: 3 }] },
+            { id: "2", content: nil, status: "wip", secret: false, user_id: "1", tags_attributes: [{ name: "Bar", post_id: "2" }] },
+            { content: "New Post!", status: "wip", secret: true, user_id: "1" }
+          ]
+        }.with_indifferent_access
       end
 
       it { is_expected.to eq expect_value }

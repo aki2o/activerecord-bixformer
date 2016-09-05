@@ -8,6 +8,9 @@ module SampleModelerFunctions
   def optional_attributes
     @options[:optional_attributes] || super
   end
+  def unique_indexes
+    @options[:unique_indexes] || super
+  end
 end
 
 class SampleCsvModeler < ActiveRecord::Bixformer::Modeler::Csv

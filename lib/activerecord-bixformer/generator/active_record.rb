@@ -13,22 +13,16 @@ module ActiveRecord
         end
 
         def generate_attributes_value(model)
-          attribute_value_map    = model.generate_import_value_map
-          identified_column_name = identified_column_name_of(model)
+          attribute_value_map = model.generate_import_value_map
 
-          model.activerecord_id = find_activerecord_id(model, attribute_value_map)
-
-          if attribute_value_map.key?(identified_column_name) || model.activerecord_id
-            # 結果ハッシュにid属性のキーがあるか、対象レコードのidが見つかった場合は
-            # 結果ハッシュのid属性をDB検索結果で更新
-            attribute_value_map[identified_column_name] = model.activerecord_id
-          end
+          set_parent_key(model, attribute_value_map)
+          set_activerecord_id(model, attribute_value_map)
 
           attribute_value_map
         end
 
         def generate_association_value(parent_model)
-          association_value_map = {}
+          association_value_map = {}.with_indifferent_access
 
           parent_model.association_map.each do |association_name, model_or_models|
             association_value = if model_or_models.is_a?(::Array)
@@ -39,7 +33,7 @@ module ActiveRecord
 
             # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
             next if ! valid_value?(association_value) &&
-                    parent_model.optional_attributes.include?(association_name)
+                    parent_model.optional_attributes.include?(association_name.to_s)
 
             association_value_map["#{association_name}_attributes".to_sym] = association_value
           end
@@ -47,9 +41,34 @@ module ActiveRecord
           association_value_map
         end
 
-        def find_activerecord_id(model, attribute_value_map)
+        def set_parent_key(model, attribute_value_map)
+          # 結果ハッシュが空なら、取り込みしないように追加はしない
+          return unless valid_value?(attribute_value_map)
+
+          # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
+          parent_id = model.parent&.activerecord_id
+
+          return unless parent_id
+
+          attribute_value_map[model.parent_foreign_key] = parent_id
+        end
+
+        def set_activerecord_id(model, attribute_value_map)
           identified_column_name = identified_column_name_of(model)
-          unique_indexes         = @modeler.config_value_for(model, :unique_indexes, [identified_column_name])
+          model.activerecord_id  = find_activerecord_id(model, identified_column_name, attribute_value_map)
+
+          if model.activerecord_id
+            # 対象レコードのidが見つかった場合は、結果ハッシュに設定
+            attribute_value_map[identified_column_name] = model.activerecord_id
+          end
+        end
+
+        def find_activerecord_id(model, identified_column_name, attribute_value_map)
+          # id属性が既に結果ハッシュにあれば、それを使う
+          return attribute_value_map[identified_column_name] if attribute_value_map.key?(identified_column_name)
+
+          # なければ、ユニーク条件が指定されていないかチェック
+          unique_indexes = @modeler.config_value_for(model, :unique_indexes, [])
 
           return nil if unique_indexes.empty?
 
@@ -59,11 +78,6 @@ module ActiveRecord
 
           # ユニーク条件は、必ず値がなければならない
           return nil if unique_conditions.any? { |_k, v| ! valid_value?(v) }
-
-          # 親のレコードが見つかっているなら、それも条件に追加する
-          parent_id = model.parent&.activerecord_id
-
-          unique_conditions[model.parent_foreign_key] = parent_id if parent_id
 
           # 指定された条件でレコードを検索し、id を格納しているカラムがあるかチェックする
           activerecord = model.activerecord_constant.find_by(unique_conditions)
