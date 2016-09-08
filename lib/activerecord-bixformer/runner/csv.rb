@@ -19,6 +19,8 @@ module ActiveRecord
 
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|
+              next unless model_attributes&.present?
+
               identified_value = model_attributes[model_constant.primary_key]
 
               activerecord = if identified_value

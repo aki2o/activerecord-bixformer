@@ -14,6 +14,10 @@ module ActiveRecord
 
         def generate_attributes_value(model)
           attribute_value_map = model.generate_import_value_map
+          required_attributes = @modeler.config_value_for(model, :required_attributes, [])
+
+          # 必須な属性が渡されていない場合には、取り込みしない
+          return {} if required_attributes.any? { |attribute_name| ! valid_value?(attribute_value_map[attribute_name]) }
 
           set_parent_key(model, attribute_value_map)
           set_activerecord_id(model, attribute_value_map)

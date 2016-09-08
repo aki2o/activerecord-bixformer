@@ -22,6 +22,10 @@ module ActiveRecord
           []
         end
 
+        def required_attributes
+          []
+        end
+
         def default_value_map
           {}
         end
