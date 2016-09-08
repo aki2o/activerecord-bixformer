@@ -93,6 +93,41 @@ EOS
         end
       end
 
+      context "destroy record" do
+        let(:entry_definitions) do
+          SampleEntryDefinition.user_all_using_indexed_association.tap do |o|
+            o[:attributes][:_destroy] = :boolean
+          end
+        end
+
+        let(:account) { 'unused-taro' }
+        let(:unused_user) { User.find_by(account: account) }
+
+        let(:csv_data) do
+          user = User.new(account: account, joined_at: Time.current).tap do |u|
+            u.save!
+
+            u.build_profile(name: 'Taro Unavailable', age: 24).save!
+
+            u.posts.build(status: :published, secret: false, content: 'See you!').save!
+            u.posts.build(status: :wip, secret: true).save!
+
+            u.posts.first.tags.build(name: 'Tag1').save!
+            u.posts.first.tags.build(name: 'Tag2').save!
+            u.posts.first.tags.build(name: 'Tag3').save!
+          end
+
+          <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp},UserDeletion
+#{user.id},#{account},2016 09 01 (15:31:21),Taro Import,"",13,,Hello!,Now on show,No,Foo,Fuga,,Good bye!,Write in Process,Yes,,,,,,,,,true
+EOS
+        end
+
+        it do
+          expect(unused_user).to be_nil
+        end
+      end
+
       context "error record" do
         let(:csv_data) do
         <<EOS

@@ -13,6 +13,7 @@ en:
         id: UserSystemCode
         account: AccountName
         joined_at: JoinTime
+        _destroy: UserDeletion
       user/profile:
         name: Name
         email: E-mail
