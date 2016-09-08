@@ -6,7 +6,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
 
   let(:modeler_options) do
     {
-      entry_definitions: entry_definitions
+      entry_definitions: entry_definitions,
     }
   end
 

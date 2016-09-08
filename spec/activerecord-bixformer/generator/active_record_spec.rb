@@ -32,16 +32,16 @@ EOS
     context "all" do
       it do
         expect(model.name).to eq :user
-        expect(model.attribute_map.keys).to eq [:id, :account, :joined_at]
-        expect(model.association_map.keys).to eq [:profile, :posts]
-        expect(model.association_map[:profile].attribute_map.keys).to eq [:name, :email, :age]
-        expect(model.association_map[:posts]).to be_an_instance_of Array
-        expect(model.association_map[:posts].size).to eq 3
-        expect(model.association_map[:posts].first.attribute_map.keys).to eq [:id, :content, :status, :secret]
-        expect(model.association_map[:posts].first.association_map.keys).to eq [:tags]
-        expect(model.association_map[:posts].first.association_map[:tags]).to be_an_instance_of Array
-        expect(model.association_map[:posts].first.association_map[:tags].size).to eq 2
-        expect(model.association_map[:posts].first.association_map[:tags].first.attribute_map.keys).to eq [:name]
+        expect(model.attribute_map.keys).to eq ["id", "account", "joined_at"]
+        expect(model.association_map.keys).to eq ["profile", "posts"]
+        expect(model.association_map["profile"].attribute_map.keys).to eq ["name", "email", "age"]
+        expect(model.association_map["posts"]).to be_an_instance_of Array
+        expect(model.association_map["posts"].size).to eq 3
+        expect(model.association_map["posts"].first.attribute_map.keys).to eq ["id", "content", "status", "secret"]
+        expect(model.association_map["posts"].first.association_map.keys).to eq ["tags"]
+        expect(model.association_map["posts"].first.association_map["tags"]).to be_an_instance_of Array
+        expect(model.association_map["posts"].first.association_map["tags"].size).to eq 2
+        expect(model.association_map["posts"].first.association_map["tags"].first.attribute_map.keys).to eq ["name"]
       end
     end
   end

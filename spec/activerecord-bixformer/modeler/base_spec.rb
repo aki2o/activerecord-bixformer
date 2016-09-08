@@ -41,7 +41,7 @@ describe ActiveRecord::Bixformer::Modeler::Base do
         let(:config_name) { :optional_attributes }
 
         it do
-          is_expected.to eq [:id, :status, :secret, :tags]
+          is_expected.to eq ["id", "status", "secret", "tags"]
 
           expect(modeler.optional_attributes).to eq SampleOptionalAttribute.user_all_default
         end

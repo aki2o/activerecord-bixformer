@@ -57,24 +57,37 @@ EOS
       end
 
       context "update record" do
-        let(:user) { User.find_by(account: 'sample-taro') }
+        let(:account) { 'renew-taro' }
         let(:joined_at) { Time.new(2016, 9, 2, 15, 31, 21, "+09:00") }
 
         let(:csv_data) do
+          user = User.new(account: account, joined_at: Time.current).tap do |u|
+            u.save!
+
+            u.build_profile(name: 'Taro Already', age: 24).save!
+
+            u.posts.build(status: :published, secret: false, content: 'Reborn!').save!
+            u.posts.build(status: :wip, secret: true).save!
+
+            u.posts.first.tags.build(name: 'Fuga').save!
+            u.posts.first.tags.build(name: 'Foo').save!
+            u.posts.first.tags.build(name: 'Bar').save!
+          end
+
         <<EOS
 #{SampleCsv.user_all_using_indexed_association_title.chomp}
-#{user.id},sample-taro,#{joined_at.to_s(:ymdhms)},Taro U Sample,"",60,#{user.posts[0].id},Good bye!,Edit disabled,No,Foo,,#{user.posts[1].id},"",Write in Process,No,Bar,,,New Post!,Write in Process,Yes,,
+#{user.id},renew-taro,#{joined_at.to_s(:ymdhms)},Taro Changed,"",60,#{user.posts[0].id},Good bye!,Edit disabled,No,Foo,,#{user.posts[1].id},"",Write in Process,No,Bar,,,New Post!,Write in Process,Yes,,
 EOS
         end
 
         it do
-          imported_user = User.find_by(account: 'sample-taro')
+          imported_user = User.find_by(account: account)
 
           expect(runner.errors).to eq []
           expect(imported_user).not_to be_nil
 
           expect(imported_user.joined_at).to eq joined_at          # changed
-          expect(imported_user.profile.name).to eq 'Taro U Sample' # changed
+          expect(imported_user.profile.name).to eq 'Taro Changed'  # changed
 
           expect(imported_user.posts.size).to eq 3                 # appended
 
@@ -95,13 +108,12 @@ EOS
 
       context "destroy record" do
         let(:entry_definitions) do
-          SampleEntryDefinition.user_all_using_indexed_association.tap do |o|
+          SampleEntryDefinition.user_all_using_indexed_association.dup.tap do |o|
             o[:attributes][:_destroy] = :boolean
           end
         end
 
         let(:account) { 'unused-taro' }
-        let(:unused_user) { User.find_by(account: account) }
 
         let(:csv_data) do
           user = User.new(account: account, joined_at: Time.current).tap do |u|
@@ -124,6 +136,8 @@ EOS
         end
 
         it do
+          unused_user = User.find_by(account: account)
+
           expect(unused_user).to be_nil
         end
       end

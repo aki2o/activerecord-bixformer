@@ -15,7 +15,7 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
 
     context "has data_source" do
       before do
-        model.data_source = Post.create!(user_id: 1, secret: secret)
+        model.data_source = Post.create!(user_id: 99, status: :wip, secret: secret)
       end
 
       context "true value" do
