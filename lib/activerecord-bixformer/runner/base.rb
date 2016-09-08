@@ -9,6 +9,7 @@ module ActiveRecord
         def initialize(format)
           @format   = format
           @modelers = []
+          @errors   = []
         end
 
         def add_modeler(*modelers)
@@ -29,6 +30,12 @@ module ActiveRecord
           end
 
           @modelers
+        end
+
+        def active_modeler(force_detect = nil)
+          return @active_modeler if ! force_detect && @active_modeler
+
+          @active_modeler = detect_modeler
         end
 
         def detect_modeler

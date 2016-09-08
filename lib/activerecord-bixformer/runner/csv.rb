@@ -8,21 +8,28 @@ module ActiveRecord
           super(:csv)
         end
 
-        def import(csv_data, csv_parse_options = {})
-          modeler = detect_modeler
-          @errors = []
-
-          csv_parse_options[:headers] = true
-
-          model_attributes_list = ::CSV.parse(csv_data, csv_parse_options).map do |csv_row|
-            modeler.new_module_instance(:generator, :active_record, modeler, csv_row).generate
-          end
-
+        def import(csv_data, options = {})
+          modeler        = active_modeler(true)
           model_constant = modeler.model_name.to_s.camelize.constantize
+
+          @errors           = []
+          options[:headers] = true
+
+          model_attributes_list = parse_csv_rows(::CSV.parse(csv_data, options))
 
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|
-              import_attributes(model_constant, model_attributes, index)
+              identified_value = model_attributes[model_constant.primary_key]
+
+              activerecord = if identified_value
+                               find_activerecord(model_constant, identified_value)
+                             else
+                               build_activerecord(model_constant, model_attributes)
+                             end
+
+              unless save_activerecord(activerecord, model_attributes)
+                @errors += make_error_messages(activerecord, index)
+              end
             end
 
             raise ::ActiveRecord::Rollback unless @errors.empty?
@@ -31,57 +38,70 @@ module ActiveRecord
           @errors.empty?
         end
 
-        def export(active_records_or_relation, csv_generate_options = {})
-          modeler    = detect_modeler
-          csv_titles = make_csv_titles(modeler, active_records_or_relation)
+        def export(active_records_or_relation, options = {})
+          modeler    = active_modeler(true)
+          generator  = modeler.new_module_instance(:generator, :csv_row, modeler, active_records_or_relation.first)
+          csv_titles = make_csv_titles(generator)
 
-          ::CSV.generate(csv_generate_options) do |csv|
+          ::CSV.generate(options) do |csv|
             csv << csv_titles
 
             active_records_or_relation.each do |activerecord|
               generator = modeler.new_module_instance(:generator, :csv_row, modeler, activerecord)
 
-              csv << export_attributes(csv_titles, generator.generate)
+              csv << make_csv_row(generator, csv_titles)
             end
           end
         end
 
         private
 
-        def make_csv_titles(modeler, active_records_or_relation)
-          generator = modeler.new_module_instance(:generator, :csv_row, modeler, active_records_or_relation.first)
-
+        def make_csv_titles(generator)
           generator.compile.available_csv_titles
         end
 
-        def import_attributes(model_constant, model_attributes, index)
-          identified_value = model_attributes[model_constant.primary_key]
+        def make_csv_row(generator, csv_titles)
+          model_attributes = generator.generate
 
-          # CSVで削除が可能だが、削除フラグは _destroy というattributesに入っており、こんなcolumnは存在しないので、このままだとエラーになる
-          # そのため、ここで要素から削除しておく
-          is_destroy = model_attributes.delete(:_destroy)
-
-          activerecord = if identified_value
-                           model_constant.find(identified_value)
-                         else
-                           model_constant.new(model_attributes)
-                         end
-
-          success = if identified_value
-                      if is_destroy
-                        activerecord.destroy
-                      else
-                        activerecord.update(model_attributes)
-                      end
-                    else
-                      activerecord.save
-                    end
-
-          @errors += make_error_messages(activerecord, index) unless success
+          csv_titles.map { |title| model_attributes[title] }
         end
 
-        def export_attributes(csv_titles, model_attributes)
-          csv_titles.map { |title| model_attributes[title] }
+        def parse_csv_rows(csv_rows)
+          modeler = active_modeler
+
+          csv_rows.map do |csv_row|
+            generator = modeler.new_module_instance(:generator, :active_record, modeler, csv_row)
+
+            parse_csv_row(generator)
+          end
+        end
+
+        def parse_csv_row(generator)
+          generator.generate
+        end
+
+        def find_activerecord(model_class, id)
+          model_class.find(id)
+        end
+
+        def build_activerecord(model_class, attributes)
+          model_class.new(attributes)
+        end
+
+        def save_activerecord(activerecord, assigned_attributes)
+          # CSVで削除が可能だが、削除フラグは _destroy というattributesに入っており、こんなcolumnは存在しないので、このままだとエラーになる
+          # そのため、ここで要素から削除しておく
+          is_destroy = assigned_attributes.delete(:_destroy)
+
+          if activerecord.persisted?
+            if is_destroy
+              activerecord.destroy
+            else
+              activerecord.update(assigned_attributes)
+            end
+          else
+            activerecord.save
+          end
         end
 
         def make_error_messages(activerecord, index)
