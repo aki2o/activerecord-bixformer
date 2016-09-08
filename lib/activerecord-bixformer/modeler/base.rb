@@ -90,10 +90,11 @@ module ActiveRecord
         end
 
         def find_module_constant(module_type, name)
-          name = :base unless name
+          name            = :base unless name
+          classified_name = name.to_s.split('/').map { |s| s.camelize }.join('::')
 
           module_load_namespaces(module_type).each do |namespace|
-            constant = "#{namespace}::#{name.to_s.camelize}".safe_constantize
+            constant = "#{namespace}::#{classified_name}".safe_constantize
 
             return constant if constant
           end

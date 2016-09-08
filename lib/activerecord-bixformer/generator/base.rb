@@ -12,7 +12,6 @@ module ActiveRecord
 
           model_name                = @modeler.model_name
           model_type, model_options = @modeler.parse_to_type_and_options(@modeler.entry_definitions[:type])
-          model_type                = resolve_model_type(model_type, model_name)
 
           @model = @modeler.new_module_instance(:model, model_type, model_name, model_options)
 
@@ -40,7 +39,6 @@ module ActiveRecord
 
           association_definitions.each do |association_name, association_definition|
             association_type, association_options = @modeler.parse_to_type_and_options(association_definition[:type])
-            association_type                      = resolve_model_type(association_type, association_name, parent_model)
             association_constant                  = @modeler.find_module_constant(:model, association_type)
 
             model_or_models = association_constant.__send__(
@@ -54,16 +52,6 @@ module ActiveRecord
             else
               compile_model(model_or_models)
             end
-          end
-        end
-
-        def resolve_model_type(type_name, model_name, parent_model = nil)
-          return type_name unless type_name == :override
-
-          if parent_model
-            [*parent_model.parents.map(&:name), parent_model.name, model_name].compact.join('::')
-          else
-            model_name
           end
         end
 
