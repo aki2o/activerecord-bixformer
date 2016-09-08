@@ -32,7 +32,7 @@ module ActiveRecord
 
         def translation_settings
           {
-            root_scope: :bixformer,
+            scope: :bixformer,
             extend_scopes: []
           }
         end

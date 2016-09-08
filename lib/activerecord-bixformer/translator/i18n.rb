@@ -20,7 +20,7 @@ module ActiveRecord
         private
 
         def translate(type_key, extra_key, arguments)
-          root_scope    = normalize_scope_value(@settings[:root_scope] || 'activerecord')
+          root_scope    = normalize_scope_value(@settings[:scope] || 'activerecord')
           extend_scopes = @settings[:extend_scopes] || []
           arguments     = ( arguments || {} ).merge(raise: true)
           model_key     = [*@model.parents, @model].map(&:name).join('/')

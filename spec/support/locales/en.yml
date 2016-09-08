@@ -24,6 +24,10 @@ en:
         content: Body%{index}
       user/posts/tags:
         name: TagName%{index}
+  activerecord:
+    attributes:
+      user/posts/tags:
+            name: TagNameOfPostByUser
   enumerize:
     post:
       status:

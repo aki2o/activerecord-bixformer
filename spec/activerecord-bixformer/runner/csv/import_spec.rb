@@ -92,6 +92,20 @@ EOS
           expect(imported_user.posts[2].tags.size).to eq 0         # not appended
         end
       end
+
+      context "error record" do
+        let(:csv_data) do
+        <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+,error-taro,2016 09 01 (15:31:21),Taro Error,"",13,,Hello!,Now on show,No,LongTagName,,,,,,,,,,,,,
+EOS
+        end
+
+        it do
+          expect(runner.errors.size).to eq 1
+          expect(runner.errors[0]).to eq 'Entry1: TagNameOfPostByUser is too long (maximum is 5 characters)'
+        end
+      end
     end
   end
 end

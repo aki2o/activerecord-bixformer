@@ -20,7 +20,7 @@ class CreateAllTables < ActiveRecord::Migration
     create_table :posts do |t|
       t.integer :user_id, null: false
       t.text :content
-      t.string :status, null: false, default: 'wip'
+      t.string :status, null: false
       t.boolean :secret, null: false, default: true
     end
 

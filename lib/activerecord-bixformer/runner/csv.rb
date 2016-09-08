@@ -22,11 +22,7 @@ module ActiveRecord
 
           model_constant.transaction do
             model_attributes_list.each.with_index(1) do |model_attributes, index|
-              begin
-                import_attributes(model_constant, model_attributes, index)
-              rescue => e
-                @errors << "Entry#{index}: #{e.message}"
-              end
+              import_attributes(model_constant, model_attributes, index)
             end
 
             raise ::ActiveRecord::Rollback unless @errors.empty?
@@ -81,15 +77,17 @@ module ActiveRecord
                       activerecord.save
                     end
 
-          unless success
-            @errors += activerecord.errors.full_messages.map do |msg|
-              "Entry#{index}: #{msg}"
-            end
-          end
+          @errors += make_error_messages(activerecord, index) unless success
         end
 
         def export_attributes(csv_titles, model_attributes)
           csv_titles.map { |title| model_attributes[title] }
+        end
+
+        def make_error_messages(activerecord, index)
+          activerecord.errors.full_messages.map do |msg|
+            "Entry#{index}: #{msg}"
+          end
         end
       end
     end

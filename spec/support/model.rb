@@ -30,11 +30,13 @@ class Post < ActiveRecord::Base
   has_many :tags
 
   accepts_nested_attributes_for :tags
+
+  validates :status, inclusion: { in: status.values }
 end
 
 class Tag < ActiveRecord::Base
   belongs_to :post
 
   validates :post_id, uniqueness: { scope: [:name] }
-  validates :name, presence: true
+  validates :name, presence: true, length: { maximum: 5 }
 end

@@ -11,8 +11,7 @@ module ActiveRecord
         def make_import_value(value)
           return nil if value.blank?
 
-          @model.activerecord_constant.__send__(@name).options.to_h[value.strip] or
-            raise ArgumentError.new "Not acceptable enumerize value : #{value}"
+          @model.activerecord_constant.__send__(@name).options.to_h[value.strip]
         end
       end
     end
