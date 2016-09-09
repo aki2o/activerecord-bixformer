@@ -152,7 +152,7 @@ EOS
 
         it do
           expect(runner.errors.size).to eq 1
-          expect(runner.errors[0]).to eq 'Entry1: TagNameOfPostByUser is too long (maximum is 5 characters)'
+          expect(runner.errors[0]).to eq 'Entry(1): TagNameOfPostByUser is too long (maximum is 5 characters)'
         end
       end
     end

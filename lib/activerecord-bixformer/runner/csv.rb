@@ -106,9 +106,15 @@ module ActiveRecord
           end
         end
 
-        def make_error_messages(activerecord, index)
+        def make_error_messages(activerecord, csv_row_index)
           activerecord.errors.full_messages.map do |msg|
-            "Entry#{index}: #{msg}"
+            I18n.t(
+              :"bixformer.csv.errors.format", {
+                default: "Entry(%{csv_row_index}): %{message}",
+                csv_row_index: csv_row_index,
+                message: msg
+              }
+            )
           end
         end
       end
