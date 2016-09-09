@@ -13,14 +13,15 @@ module ActiveRecord
         end
 
         def generate_attributes_value(model)
-          attribute_value_map = model.generate_import_value_map
-          required_attributes = @modeler.config_value_for(model, :required_attributes, [])
+          attribute_value_map    = model.generate_import_value_map
+          required_attributes    = @modeler.config_value_for(model, :required_attributes, [])
+          identified_column_name = identified_column_name_of(model)
 
           # 必須な属性が渡されていない場合には、取り込みしない
           return {} if required_attributes.any? { |attribute_name| ! presence_value?(attribute_value_map[attribute_name]) }
 
-          set_parent_key(model, attribute_value_map)
-          set_activerecord_id(model, attribute_value_map)
+          set_parent_key(model, attribute_value_map, identified_column_name)
+          set_activerecord_id(model, attribute_value_map, identified_column_name)
 
           # 空でない要素が無いなら、空ハッシュで返す
           presence_value?(attribute_value_map) ? attribute_value_map : {}
@@ -46,9 +47,13 @@ module ActiveRecord
           association_value_map
         end
 
-        def set_parent_key(model, attribute_value_map)
+        def set_parent_key(model, attribute_value_map, identified_column_name)
           # 結果ハッシュが空なら、取り込みしないように追加はしない
           return unless presence_value?(attribute_value_map)
+
+          # 誤って関連レコードが変わってしまうことを避けるために、
+          # id属性が指定されている場合には、処理しない
+          return if attribute_value_map[identified_column_name]
 
           # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
           parent_id = model.parent&.activerecord_id
@@ -58,23 +63,17 @@ module ActiveRecord
           attribute_value_map[model.parent_foreign_key] = parent_id
         end
 
-        def set_activerecord_id(model, attribute_value_map)
-          identified_column_name = identified_column_name_of(model)
-          model.activerecord_id  = find_activerecord_id(model, identified_column_name, attribute_value_map)
-
-          if model.activerecord_id
-            # 対象レコードのidが見つかった場合は、結果ハッシュに設定
-            attribute_value_map[identified_column_name] = model.activerecord_id
-          end
+        def set_activerecord_id(model, attribute_value_map, identified_column_name)
+          # id属性が既に結果ハッシュにあれば、それを使い、なければ、DBから検索を試みて、
+          # その結果を、結果ハッシュにも代入
+          model.activerecord_id = attribute_value_map[identified_column_name] ||=
+                                  find_activerecord_id(model, attribute_value_map, identified_column_name)
         end
 
-        def find_activerecord_id(model, identified_column_name, attribute_value_map)
-          # id属性が既に結果ハッシュにあれば、それを使う
-          return attribute_value_map[identified_column_name] if attribute_value_map.key?(identified_column_name)
-
-          # なければ、ユニーク条件が指定されていないかチェック
+        def find_activerecord_id(model, attribute_value_map, identified_column_name)
           unique_indexes = @modeler.config_value_for(model, :unique_indexes, [])
 
+          # ユニーク条件が指定されていないなら終了
           return nil if unique_indexes.empty?
 
           unique_conditions = unique_indexes.map do |key|
