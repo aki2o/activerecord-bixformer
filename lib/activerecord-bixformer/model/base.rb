@@ -10,7 +10,8 @@ module ActiveRecord
                     :attribute_map,
                     :optional_attributes,
                     :association_map,
-                    :translator
+                    :translator,
+                    :modeler
 
         class << self
           def new_as_association_for_import(parent, association_name, options)
