@@ -2,6 +2,8 @@ module ActiveRecord
   module Bixformer
     module Generator
       class Base
+        attr_reader :data_source
+
         def initialize(modeler, data_source)
           @modeler     = modeler
           @data_source = data_source
