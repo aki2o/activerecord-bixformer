@@ -2,6 +2,8 @@ module ActiveRecord
   module Bixformer
     module Generator
       class Base
+        include ActiveRecord::Bixformer::ValuePresenceValidatable
+
         attr_reader :data_source
 
         def initialize(modeler, data_source)

@@ -17,7 +17,7 @@ module ActiveRecord
           required_attributes = @modeler.config_value_for(model, :required_attributes, [])
 
           # 必須な属性が渡されていない場合には、取り込みしない
-          return {} if required_attributes.any? { |attribute_name| ! valid_value?(attribute_value_map[attribute_name]) }
+          return {} if required_attributes.any? { |attribute_name| ! presence_value?(attribute_value_map[attribute_name]) }
 
           set_parent_key(model, attribute_value_map)
           set_activerecord_id(model, attribute_value_map)
@@ -30,13 +30,13 @@ module ActiveRecord
 
           parent_model.association_map.each do |association_name, model_or_models|
             association_value = if model_or_models.is_a?(::Array)
-                                  model_or_models.map { |m| generate_model_value(m) }.reject { |v| ! valid_value?(v) }
+                                  model_or_models.map { |m| generate_model_value(m) }.reject { |v| ! presence_value?(v) }
                                 else
                                   generate_model_value(model_or_models)
                                 end
 
             # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
-            next if ! valid_value?(association_value) &&
+            next if ! presence_value?(association_value) &&
                     parent_model.optional_attributes.include?(association_name.to_s)
 
             association_value_map["#{association_name}_attributes".to_sym] = association_value
@@ -47,7 +47,7 @@ module ActiveRecord
 
         def set_parent_key(model, attribute_value_map)
           # 結果ハッシュが空なら、取り込みしないように追加はしない
-          return unless valid_value?(attribute_value_map)
+          return unless presence_value?(attribute_value_map)
 
           # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
           parent_id = model.parent&.activerecord_id
@@ -81,7 +81,7 @@ module ActiveRecord
           end.to_h
 
           # ユニーク条件は、必ず値がなければならない
-          return nil if unique_conditions.any? { |_k, v| ! valid_value?(v) }
+          return nil if unique_conditions.any? { |_k, v| ! presence_value?(v) }
 
           # 指定された条件でレコードを検索し、id を格納しているカラムがあるかチェックする
           activerecord = model.activerecord_constant.find_by(unique_conditions)
@@ -93,22 +93,6 @@ module ActiveRecord
 
         def identified_column_name_of(model)
           model.activerecord_constant.primary_key
-        end
-
-        def valid_value?(value)
-          # 空でない要素であるか or 空でない要素を含んでいるかどうか
-          case value
-          when ::Hash
-            value.values.any? { |v| valid_value?(v) }
-          when ::Array
-            value.any? { |v| valid_value?(v) }
-          when ::String
-            ! value.blank?
-          when ::TrueClass, ::FalseClass
-            true
-          else
-            value ? true : false
-          end
         end
       end
     end

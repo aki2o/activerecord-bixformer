@@ -2,6 +2,8 @@ module ActiveRecord
   module Bixformer
     module Model
       class Base
+        include ActiveRecord::Bixformer::ValuePresenceValidatable
+
         attr_accessor :data_source,
                       :activerecord_id
 
@@ -106,16 +108,16 @@ module ActiveRecord
           @attribute_map.keys.each do |attribute_name|
             attribute_value = make_import_value(attribute_name)
 
-            attribute_value = @default_value_map[attribute_name] unless valid_value?(attribute_value)
+            attribute_value = @default_value_map[attribute_name] unless presence_value?(attribute_value)
 
             # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
-            next if ! valid_value?(attribute_value) &&
+            next if ! presence_value?(attribute_value) &&
                     @optional_attributes.include?(attribute_name.to_s)
 
             value_map[attribute_name] = attribute_value
           end
 
-          value_map
+          presence_value?(value_map) ? value_map : {}
         end
 
         private
@@ -131,17 +133,6 @@ module ActiveRecord
 
         def make_import_value(attribute_name)
           raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
-        end
-
-        def valid_value?(value)
-          case value
-          when ::String
-            ! value.blank?
-          when ::TrueClass, ::FalseClass
-            true
-          else
-            value ? true : false
-          end
         end
       end
     end
