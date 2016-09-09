@@ -22,7 +22,8 @@ module ActiveRecord
           set_parent_key(model, attribute_value_map)
           set_activerecord_id(model, attribute_value_map)
 
-          attribute_value_map
+          # 空でない要素が無いなら、空ハッシュで返す
+          presence_value?(attribute_value_map) ? attribute_value_map : {}
         end
 
         def generate_association_value(parent_model)
@@ -93,6 +94,22 @@ module ActiveRecord
 
         def identified_column_name_of(model)
           model.activerecord_constant.primary_key
+        end
+
+        def presence_value?(value)
+          # 空でない要素であるか or 空でない要素を含んでいるかどうか
+          case value
+          when ::Hash
+            value.values.any? { |v| presence_value?(v) }
+          when ::Array
+            value.any? { |v| presence_value?(v) }
+          when ::String
+            ! value.blank?
+          when ::TrueClass, ::FalseClass
+            true
+          else
+            value ? true : false
+          end
         end
       end
     end

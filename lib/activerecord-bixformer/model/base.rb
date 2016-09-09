@@ -2,8 +2,6 @@ module ActiveRecord
   module Bixformer
     module Model
       class Base
-        include ActiveRecord::Bixformer::ValuePresenceValidatable
-
         attr_accessor :data_source,
                       :activerecord_id
 
@@ -117,7 +115,7 @@ module ActiveRecord
             value_map[attribute_name] = attribute_value
           end
 
-          presence_value?(value_map) ? value_map : {}
+          value_map
         end
 
         private
@@ -133,6 +131,17 @@ module ActiveRecord
 
         def make_import_value(attribute_name)
           raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
+        end
+
+        def presence_value?(value)
+          case value
+          when ::String
+            ! value.blank?
+          when ::TrueClass, ::FalseClass
+            true
+          else
+            value ? true : false
+          end
         end
       end
     end
