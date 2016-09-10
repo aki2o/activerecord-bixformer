@@ -80,17 +80,19 @@ ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッド�
   # 対象モデル（上の例なら user ）の処理を担当するModelクラス名
   # 省略可能で、省略された場合は :base が指定される
   # 指定可能な値については、「本フレームワークに定義されたModel一覧」を参照
+  # または、独自クラスを定義し、 module_load_namespaces を設定
   type: :base,
   
   # 処理対象の属性名をキー、その処理を担当するAttributeクラス名を値に持つハッシュ
   attributes: {
     # 指定可能な値については、「本フレームワークに定義されたAttribute一覧」を参照
+    # または、独自クラスを定義し、 module_load_namespaces を設定
     name: :base,
     # クラス名を配列にすると、2番目以降の要素はAttributeクラスに渡される
     joined_at: [:time, format: :ymdhms]
   },
   
-  # 処理対象の関連モデル名をキー、その処理を定義したハッシュを値に持つハッシュ
+  # 処理対象の関連名をキー、その処理を定義したハッシュを値に持つハッシュ
   associations: {
     posts: {
       # 同じように、 type, attributes, associations が定義可能
@@ -260,9 +262,9 @@ runner.import(csv_data)
 For CSV
 
 * base
-    * has_one な関連モデル用
+    * has_one な関連モデル用。 has_many な関連モデルには使えない
 * indexed
-    * has_many な関連モデル用
+    * has_many な関連モデル用。 has_one な関連モデルには使えない
     * `size` オプションでインポート/エクスポートするサイズを指定
     * 属性の translation は `投稿%{index}のタイトル` のように指定
     * モデルの translation は `ユーザ%{index}の` のように指定（関連モデルがさらに indexed だった場合に使われます）
