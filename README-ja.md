@@ -1,6 +1,4 @@
-# Activerecord::Bixformer
-
-## コレは何？
+# コレは何？
 
 データベースのレコードを ActiveRecord を介して、他のデータ形式にインポート/エクスポートする処理をサポートするフレームワークです。  
 
@@ -164,7 +162,7 @@ end
 ]
 ```
 
-* 上記の場合、 user は name, birthday で特定され、 user.post は user_id, title で特定されます
+* 上記の場合、 user は name, birthday で特定され、 user.posts は user_id, title で特定されます
 * foreign_key（上記の場合、 user_id ）は、インポートデータの有無に関わらず、データベースの正しい値で補完されます
 * それ以外のもので、インポートデータに有効な値がなかった場合は、更新はせず、追加になります
 * モデルやDBに、実際にユニークインデックスが定義されていなくても指定可能です
@@ -214,9 +212,9 @@ end
 
 上記の場合、ユーザが投稿したタイトルは
 
-`bixformer.version2.user/posts.title`
-`bixformer.version1.user/posts.title`
-`bixformer.user/posts.title`
+`bixformer.version2.user/posts.title`  
+`bixformer.version1.user/posts.title`  
+`bixformer.user/posts.title`  
 
 の順で検索されます。translation が見つからなかった場合は、エラーになります。  
 
