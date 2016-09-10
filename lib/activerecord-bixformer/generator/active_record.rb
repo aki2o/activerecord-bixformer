@@ -51,12 +51,15 @@ module ActiveRecord
           # 結果ハッシュが空なら、取り込みしないように追加はしない
           return unless presence_value?(attribute_value_map)
 
-          # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
           parent_id = model.parent&.activerecord_id
 
-          return unless parent_id
-
-          attribute_value_map[model.parent_foreign_key] = parent_id
+          if parent_id
+            # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
+            attribute_value_map[model.parent_foreign_key] = parent_id
+          else
+            # 見つかっていないなら、間違った値が指定されている可能性があるので、キー自体を削除
+            attribute_value_map.delete(model.parent_foreign_key)
+          end
         end
 
         def set_activerecord_id(model, attribute_value_map, identified_column_name)
@@ -67,7 +70,7 @@ module ActiveRecord
             # 更新なら、ID属性を改めて設定
             attribute_value_map[identified_column_name] = model.activerecord_id
           else
-            # 追加なら、ID属性があるとダメなのでキー自体を削除
+            # 見つかっていないなら、間違った値が指定されている可能性があるので、キー自体を削除
             attribute_value_map.delete(identified_column_name)
           end
         end

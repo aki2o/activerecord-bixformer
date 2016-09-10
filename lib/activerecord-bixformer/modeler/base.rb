@@ -23,16 +23,16 @@ module ActiveRecord
           []
         end
 
-        def default_values
-          {}
+        def unique_indexes
+          []
         end
 
         def required_condition
           {}
         end
 
-        def unique_indexes
-          []
+        def default_values
+          {}
         end
 
         def translation_config
@@ -44,7 +44,7 @@ module ActiveRecord
 
         def module_load_namespaces(module_type)
           [
-            "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}::#{@format.to_s.camelize}",
+            "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}::#{format.to_s.camelize}",
             "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}",
           ]
         end
