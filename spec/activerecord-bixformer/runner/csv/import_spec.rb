@@ -6,7 +6,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
 
   let(:modeler_options) do
     {
-      entry_definitions: entry_definitions,
+      entry_definition: entry_definition,
       optional_attributes: optional_attributes,
       unique_indexes: unique_indexes
     }
@@ -23,7 +23,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
     let(:csv_options) { {} }
 
     context "all" do
-      let(:entry_definitions) { SampleEntryDefinition.user_all_using_indexed_association }
+      let(:entry_definition) { SampleEntryDefinition.user_all_using_indexed_association }
       let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
       let(:unique_indexes) { SampleUniqueIndex.user_all_default }
 
@@ -107,7 +107,7 @@ EOS
       end
 
       context "destroy record" do
-        let(:entry_definitions) do
+        let(:entry_definition) do
           SampleEntryDefinition.user_all_using_indexed_association.dup.tap do |o|
             o[:attributes][:_destroy] = :boolean
           end

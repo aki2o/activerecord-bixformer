@@ -6,7 +6,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
 
   let(:modeler_options) do
     {
-      entry_definitions: entry_definitions,
+      entry_definition: entry_definition,
     }
   end
 
@@ -16,7 +16,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
     let(:csv_options) { {} }
 
     context "all" do
-      let(:entry_definitions) { SampleEntryDefinition.user_all_using_indexed_association }
+      let(:entry_definition) { SampleEntryDefinition.user_all_using_indexed_association }
       let(:user) { User.find_by(account: 'sample-taro') }
       let(:expect_value) do
         <<EOS

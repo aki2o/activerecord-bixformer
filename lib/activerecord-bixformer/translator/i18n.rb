@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Translator
       class I18n
-        attr_accessor :settings, :model, :attribute_arguments_map, :model_arguments
+        attr_accessor :config, :model, :attribute_arguments_map, :model_arguments
 
         def initialize
           @attribute_arguments_map = {}
@@ -20,8 +20,8 @@ module ActiveRecord
         private
 
         def translate(type_key, extra_key, arguments)
-          root_scope    = normalize_scope_value(@settings[:scope] || 'activerecord')
-          extend_scopes = @settings[:extend_scopes] || []
+          root_scope    = normalize_scope_value(@config[:scope] || 'activerecord')
+          extend_scopes = @config[:extend_scopes] || []
           arguments     = ( arguments || {} ).merge(raise: true)
           model_key     = [*@model.parents, @model].map(&:name).join('/')
 

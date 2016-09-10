@@ -13,7 +13,7 @@ module ActiveRecord
           return @model if @model
 
           model_name                = @modeler.model_name
-          model_type, model_options = @modeler.parse_to_type_and_options(@modeler.entry_definitions[:type])
+          model_type, model_options = @modeler.parse_to_type_and_options(@modeler.entry_definition[:type])
 
           @model = @modeler.new_module_instance(:model, model_type, model_name, model_options)
 
@@ -37,7 +37,7 @@ module ActiveRecord
         end
 
         def compile_associations(parent_model)
-          association_definitions = @modeler.config_value_for(parent_model, :entry_definitions, {})[:associations] || {}
+          association_definitions = @modeler.config_value_for(parent_model, :entry_definition, {})[:associations] || {}
 
           association_definitions.each do |association_name, association_definition|
             association_type, association_options = @modeler.parse_to_type_and_options(association_definition[:type])

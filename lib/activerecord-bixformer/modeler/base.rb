@@ -11,10 +11,7 @@ module ActiveRecord
         def model_name
         end
 
-        # type
-        # attributes
-        # associations
-        def entry_definitions
+        def entry_definition
           {}
         end
 
@@ -26,7 +23,11 @@ module ActiveRecord
           []
         end
 
-        def default_value_map
+        def default_values
+          {}
+        end
+
+        def required_condition
           {}
         end
 
@@ -34,7 +35,7 @@ module ActiveRecord
           []
         end
 
-        def translation_settings
+        def translation_config
           {
             scope: :bixformer,
             extend_scopes: []
@@ -58,8 +59,8 @@ module ActiveRecord
           entire_config_value = entire_config_value.with_indifferent_access if entire_config_value.is_a?(::Hash)
 
           # その中から、指定のmodelに対応する設定部分を抽出
-          config_value = if config_name == :entry_definitions
-                           find_entry_definitions(entire_config_value, model_names_without_root)
+          config_value = if config_name == :entry_definition
+                           find_entry_definition(entire_config_value, model_names_without_root)
                          else
                            find_nested_config_value(entire_config_value, model_names_without_root)
                          end
@@ -132,12 +133,12 @@ module ActiveRecord
           find_nested_config_value(config_map.with_indifferent_access[key], keys)
         end
 
-        def find_entry_definitions(config, keys)
+        def find_entry_definition(config, keys)
           return config ? config.dup : nil if keys.empty?
 
           key = keys.shift
 
-          find_entry_definitions(config[:associations][key], keys)
+          find_entry_definition(config[:associations][key], keys)
         end
       end
     end

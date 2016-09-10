@@ -2,8 +2,8 @@ module SampleModelerFunctions
   def model_name
     @options[:model_name] || :user
   end
-  def entry_definitions
-    @options[:entry_definitions] || super
+  def entry_definition
+    @options[:entry_definition] || super
   end
   def optional_attributes
     @options[:optional_attributes] || super

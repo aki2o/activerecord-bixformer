@@ -5,7 +5,7 @@ describe ActiveRecord::Bixformer::Generator::CsvRow do
 
   let(:modeler_options) do
     {
-      entry_definitions: SampleEntryDefinition.user_all_using_indexed_association,
+      entry_definition: SampleEntryDefinition.user_all_using_indexed_association,
       optional_attributes: optional_attributes
     }
   end

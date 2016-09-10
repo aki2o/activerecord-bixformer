@@ -51,10 +51,6 @@ module ActiveRecord
           # 結果ハッシュが空なら、取り込みしないように追加はしない
           return unless presence_value?(attribute_value_map)
 
-          # 誤って関連レコードが変わってしまうことを避けるために、
-          # id属性が指定されている場合には、処理しない
-          return if attribute_value_map[identified_column_name]
-
           # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
           parent_id = model.parent&.activerecord_id
 
@@ -64,31 +60,68 @@ module ActiveRecord
         end
 
         def set_activerecord_id(model, attribute_value_map, identified_column_name)
-          # id属性が既に結果ハッシュにあれば、それを使い、なければ、DBから検索を試みて、
-          # その結果を、結果ハッシュにも代入
-          model.activerecord_id = attribute_value_map[identified_column_name] ||=
-                                  find_activerecord_id(model, attribute_value_map, identified_column_name)
+          # 更新の場合は、インポートデータを元にデータベースから対象のレコードを検索してIDを取得
+          model.activerecord_id = verified_activerecord_id(model, attribute_value_map, identified_column_name)
+
+          if model.activerecord_id
+            # 更新なら、ID属性を改めて設定
+            attribute_value_map[identified_column_name] = model.activerecord_id
+          else
+            # 追加なら、ID属性があるとダメなのでキー自体を削除
+            attribute_value_map.delete(identified_column_name)
+          end
         end
 
-        def find_activerecord_id(model, attribute_value_map, identified_column_name)
+        def verified_activerecord_id(model, attribute_value_map, identified_column_name)
+          # 更新対象のレコードを特定できるかチェック
+          identified_value = attribute_value_map[identified_column_name]
+
+          uniqueness_condition = if identified_value
+                                   { identified_column_name => identified_value }
+                                 else
+                                   find_unique_condition(model, attribute_value_map, identified_column_name)
+                                 end
+
+          # レコードが特定できないなら、更新処理ではないので終了
+          return nil unless uniqueness_condition
+
+          # 更新対象のレコードを正しく特定できているか確認するための検証条件を取得
+          required_condition = if model.parent
+                                 key = model.parent_foreign_key
+
+                                 { key => attribute_value_map[key] }
+                               else
+                                 @modeler.required_condition
+                               end
+
+          # 検証条件は、必ず値がなければならない
+          return nil if required_condition.any? { |_k, v| ! presence_value?(v) }
+
+          # インポートされてきた、レコードを特定する条件が、誤った値でないかどうかを、
+          # 特定されるレコードが、更新すべき正しいレコードであるかチェックするための
+          # 検証条件とマージして、データベースに登録されているか確認する
+          verified_condition = uniqueness_condition.merge(required_condition)
+
+          model.activerecord_constant.find_by!(verified_condition).__send__(identified_column_name)
+        rescue ::ActiveRecord::RecordNotFound => e
+          # ID属性が指定されているのに、データベースに見つからない場合はエラーにする
+          raise e if identified_value
+        end
+
+        def find_unique_condition(model, attribute_value_map, identified_column_name)
           unique_indexes = @modeler.config_value_for(model, :unique_indexes, [])
 
           # ユニーク条件が指定されていないなら終了
           return nil if unique_indexes.empty?
 
-          unique_conditions = unique_indexes.map do |key|
+          unique_condition = unique_indexes.map do |key|
             [key, attribute_value_map[key]]
           end.to_h
 
           # ユニーク条件は、必ず値がなければならない
-          return nil if unique_conditions.any? { |_k, v| ! presence_value?(v) }
+          return nil if unique_condition.any? { |_k, v| ! presence_value?(v) }
 
-          # 指定された条件でレコードを検索し、id を格納しているカラムがあるかチェックする
-          activerecord = model.activerecord_constant.find_by(unique_conditions)
-
-          return nil unless activerecord&.respond_to?(identified_column_name)
-
-          activerecord.__send__(identified_column_name)
+          unique_condition
         end
 
         def identified_column_name_of(model)

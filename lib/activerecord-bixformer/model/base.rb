@@ -42,9 +42,9 @@ module ActiveRecord
         def setup_with_modeler(modeler)
           @modeler = modeler
 
-          entry_definitions = @modeler.config_value_for(self, :entry_definitions, {})
+          entry_definition = @modeler.config_value_for(self, :entry_definition, {})
 
-          @attribute_map = (entry_definitions[:attributes] || {}).map do |attribute_name, attribute_value|
+          @attribute_map = (entry_definition[:attributes] || {}).map do |attribute_name, attribute_value|
             attribute_type, attribute_options = @modeler.parse_to_type_and_options(attribute_value)
 
             attribute = @modeler.new_module_instance(:attribute, attribute_type, self, attribute_name, attribute_options)
@@ -53,12 +53,12 @@ module ActiveRecord
           end.to_h
 
           @optional_attributes = @modeler.config_value_for(self, :optional_attributes, [])
-          @default_value_map   = @modeler.config_value_for(self, :default_value_map, {})
+          @default_values   = @modeler.config_value_for(self, :default_values, {})
 
           # At present, translation function is only i18n
           @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
 
-          @translator.settings = @modeler.translation_settings.dup
+          @translator.config = @modeler.translation_config.dup
           @translator.model    = self
         end
 
@@ -106,7 +106,7 @@ module ActiveRecord
           @attribute_map.keys.each do |attribute_name|
             attribute_value = make_import_value(attribute_name)
 
-            attribute_value = @default_value_map[attribute_name] unless presence_value?(attribute_value)
+            attribute_value = @default_values[attribute_name] unless presence_value?(attribute_value)
 
             # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
             next if ! presence_value?(attribute_value) &&
