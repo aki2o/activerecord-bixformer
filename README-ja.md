@@ -7,6 +7,7 @@
 以下のような特徴があります。  
 
 * `accepts_nested_attributes_for` で定義された関連モデルを同時にインポート/エクスポート可能
+* インポートデータに `primary_key` が含まれる場合、それが正当な値かどうかをチェック
 * 設定用クラスを定義して使い、モデル、属性単位で処理をカスタマイズ可能
 * その設定用クラスを複数定義して、実行時に切り替え可能
 
@@ -16,9 +17,9 @@
 
 です。
 
-## Installation
+## インストール
 
-Gemfileに  
+Gemfile に  
 
 ```ruby
 gem 'activerecord-bixformer'
@@ -50,16 +51,20 @@ gem 'activerecord-bixformer'
 ### Model
 
 ActiveRecord のモデルに対応して、そのモデルのインポート/エクスポート処理を担当するクラスです。  
+
 ActiveRecord::Bixformer::Model::Base を継承した独自クラスを定義し、  
 Modelerを適切に定義することで、それを使用して処理内容を切り替えることができます。  
 
 ### Attribute
 
 ActiveRecord のモデルの持つ属性に対応して、その属性のインポート/エクスポート処理を担当するクラスです。  
+
 ActiveRecord::Bixformer::Attribute::Base を継承した独自クラスを定義し、  
 Modelerを適切に定義することで、それを使用して処理内容を切り替えることができます。  
 
-## Modelerの設定
+# 使い方
+
+## 1. Modelerの実装
 
 ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッドを適切に設定して下さい。  
 
@@ -78,7 +83,7 @@ ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッド�
   # 省略可能で、省略された場合は :base が指定される
   # 指定可能な値については、「本フレームワークに定義されたModel一覧」を参照
   type: :base,
-
+  
   # 処理対象の属性名をキー、その処理を担当するAttributeクラス名を値に持つハッシュ
   attributes: {
     # 指定可能な値については、「本フレームワークに定義されたAttribute一覧」を参照
@@ -86,12 +91,12 @@ ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッド�
     # クラス名を配列にすると、2番目以降の要素はAttributeクラスに渡される
     joined_at: [:time, format: :ymdhms]
   },
-
+  
   # 処理対象の関連モデル名をキー、その処理を定義したハッシュを値に持つハッシュ
   associations: {
     posts: {
       # 同じように、 type, attributes, associations が定義可能
-    
+      
       # 配列にすると、2番目以降の要素はModelクラスに渡される
       type: [:indexed, size: 3]
     }
@@ -107,10 +112,10 @@ ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッド�
 [
   # 対象モデル（上の例なら user ）の属性名。 entry_definition で定義されていること
   :name,
-
+  
   # 関連名も指定可能。この場合は、その関連モデルの処理対象の属性全てが有効な値でない場合
   :posts,
-
+  
   # 関連モデルの持つ要素を個別指定したい場合は、ハッシュで定義
   posts: [
     # 同じように定義可能
@@ -160,9 +165,25 @@ end
 ```
 
 * 上記の場合、 user は name, birthday で特定され、 user.post は user_id, title で特定されます
-* foreign_key（上記の場合、 user_id ）は、
-* モデルやDBで、実際にユニークインデックスがなくても指定可能です
-* ただし、その場合は、条件に合致したどのレコードが更新されるかは保証できません
+* foreign_key（上記の場合、 user_id ）は、インポートデータの有無に関わらず、データベースの正しい値で補完されます
+* それ以外のもので、インポートデータに有効な値がなかった場合は、更新はせず、追加になります
+* モデルやDBに、実際にユニークインデックスが定義されていなくても指定可能です
+* ただし、その場合は、条件に合致したレコードが複数あった場合、どれが更新されるか保証できません
+
+### required_condition
+
+インポート時に、 `model_name` のインポートデータに `primary_key` がある場合、それが正しい値かどうかを
+検証するための条件を定義した以下のようなハッシュを返して下さい。  
+
+```ruby
+{
+  # 対象モデル（上の例なら user ）は、現在処理対象になっている group に属しているはず
+  group_id: current_group.id
+}
+```
+
+* `primary_key` や `unique_indexes` が指定されている場合のデータベース検索の条件に追加されます
+* 関連モデルの場合は、親レコードの foreign_key が代わりに使用されます
 
 ### default_values
 
@@ -177,37 +198,99 @@ end
 }
 ```
 
+### translation_config
 
-#### 本フレームワークに定義されたModel一覧
+インポート/エクスポートで行われる translation の設定を定義した以下のようなハッシュを返して下さい。  
+
+```ruby
+{
+  # 基点のスコープ
+  scope: :bixformer,
+  
+  # translation を試みるスコープを、基点のスコープ配下に増やしたい場合に指定
+  extend_scopes: [:version1, :version2]
+}
+```
+
+上記の場合、ユーザが投稿したタイトルは
+
+`bixformer.version2.user/posts.title`
+`bixformer.version1.user/posts.title`
+`bixformer.user/posts.title`
+
+の順で検索されます。translation が見つからなかった場合は、エラーになります。  
+
+* CSVでは
+    * カラム名に使用されます
+
+### module_load_namespaces
+
+`entry_definition` で指定されたクラス名のクラスを探索する namespace を定義した配列を返して下さい。  
+ActiveRecord::Bixformer::Modeler::Base には、以下のように定義されています。  
+
+```ruby
+def module_load_namespaces(module_type)
+  [
+    "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}::#{format.to_s.camelize}",
+    "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}",
+  ]
+end
+```
+
+* 要素の先頭から、 `要素::クラス名.to_s.classify.constantize` を試し、成功したものを採用します
+* `module_type` には、 `:model` / `:attribute` / `:generator` のいずれかが渡されます
+* `format` は、対象のデータ形式（ `:csv` ）になります
+
+## 2. Runner を実装
+
+CSVを扱う簡単なサンプルコードは以下のような感じになります。  
+
+```ruby
+runner = ActiveRecord::Bixformer::Runner::Csv.new
+
+runner.add_modeler(Your::Modeler.new)
+
+csv_data = runner.export(User.all, force_quotes: true)
+
+runner.import(csv_data)
+```
+
+## その他
+
+### 本フレームワークに定義されたModel一覧
+
+For CSV
 
 * base
+    * has_one な関連モデル用
+* indexed
+    * has_many な関連モデル用
+    * `size` オプションでインポート/エクスポートするサイズを指定
+    * 属性の translation は `投稿%{index}のタイトル` のように指定
+    * モデルの translation は `ユーザ%{index}の` のように指定（関連モデルがさらに indexed だった場合に使われます）
 
-csv
-
-* 
-
-#### 本フレームワークに定義されたAttribute一覧
+### 本フレームワークに定義されたAttribute一覧
 
 * base
+    * エクスポートでは `to_s` し、インポートでは `presence` する
 * boolean
+    * `true` / `false` オプションに、それぞれに対応する文字列を指定。デフォルトは、 `"true"` / `"false"`
+    * インポート時、合致しない値は `nil` になる
 * date
+    * `format` オプションで、 `Date::DATE_FORMATS` のキーを指定。デフォルトは、 `default`
+    * インポート時、合致しない値はエラーになる
 * time
-* booletania ( https://github.com/ryoff/booletania )
-* enumerize ( https://github.com/brainspec/enumerize )
+    * `format` オプションで、 `Time::DATE_FORMATS` のキーを指定。デフォルトは、 `default`
+    * インポート時、合致しない値はエラーになる
+* booletania
+    * 詳細は、 https://github.com/ryoff/booletania
+    * インポート時、合致しない値は `nil` になる
+* enumerize
+    * 詳細は、 https://github.com/brainspec/enumerize
+    * インポート時、合致しない値はエラーになる
 * override
-
-##### Attributeで受け取れる引数
-
-
-
-
-## Development
-
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/activerecord-bixformer.
+    * モデルに処理を委譲する
+    * モデルに `override_import_属性名` / `override_export_属性名` を定義すること
+    * インポートでは、インポートデータ、エクスポートでは、 ActiveRecord の属性値が引数となる
+    * インポート/エクスポートする値を返すこと
 
