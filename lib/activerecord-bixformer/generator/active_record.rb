@@ -49,6 +49,10 @@ module ActiveRecord
         end
 
         def set_required_condition(model, attribute_value_map)
+          # 結果ハッシュが空なら、取り込みしないように追加はしない
+          return unless presence_value?(attribute_value_map)
+
+          # 設定するのはルートの場合のみ
           return if model.parent
 
           attribute_value_map.merge!(@modeler.required_condition)
