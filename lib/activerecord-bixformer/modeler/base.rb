@@ -6,6 +6,8 @@ module ActiveRecord
 
         def initialize(format)
           @format = format
+          @module_load_namespaces_of = {}
+          @module_constant_of = {}
         end
 
         def model_name
@@ -55,8 +57,15 @@ module ActiveRecord
           # 指定された設定の全設定値を取得
           entire_config_value = __send__(config_name)
 
-          # Hashなら、with_indifferent_accessしておく
-          entire_config_value = entire_config_value.with_indifferent_access if entire_config_value.is_a?(::Hash)
+          if entire_config_value.is_a?(::Hash)
+            # Hashなら、with_indifferent_accessしておく
+            entire_config_value = entire_config_value.with_indifferent_access
+          elsif entire_config_value.is_a?(::Array) && entire_config_value.last.is_a?(::Hash)
+            # Arrayで最後の要素がHashなら、with_indifferent_accessしておく
+            config_value = entire_config_value.pop
+
+            entire_config_value.push config_value.with_indifferent_access
+          end
 
           # その中から、指定のmodelに対応する設定部分を抽出
           config_value = if config_name == :entry_definition
@@ -91,13 +100,18 @@ module ActiveRecord
         end
 
         def find_module_constant(module_type, name)
-          name            = :base unless name
-          classified_name = name.to_s.split('/').map { |s| s.camelize }.join('::')
+          name = :base unless name
 
-          module_load_namespaces(module_type).each do |namespace|
-            constant = "#{namespace}::#{classified_name}".safe_constantize
+          module_constant = @module_constant_of["#{module_type}/#{name}"]
 
-            return constant if constant
+          return module_constant if module_constant
+
+          namespaces = @module_load_namespaces_of[module_type] ||= module_load_namespaces(module_type)
+
+          namespaces.each do |namespace|
+            constant = "#{namespace}::#{name.to_s.camelize}".safe_constantize
+
+            return @module_constant_of["#{module_type}/#{name}"] = constant if constant
           end
 
           raise ::ArgumentError.new "Not found module named #{name.to_s.camelize} in module_load_namespaces('#{module_type}')"
@@ -130,7 +144,7 @@ module ActiveRecord
 
           return nil unless config_map.is_a?(::Hash)
 
-          find_nested_config_value(config_map.with_indifferent_access[key], keys)
+          find_nested_config_value(config_map[key], keys)
         end
 
         def find_entry_definition(config, keys)

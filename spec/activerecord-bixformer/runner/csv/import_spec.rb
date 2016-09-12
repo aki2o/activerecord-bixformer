@@ -235,6 +235,19 @@ EOS
           end
         end
       end
+
+      # context "profiling" do
+      #   let(:csv_data) do
+      #     SampleCsv.user_all_using_indexed_association_title +
+      #       (1..500).map { |i| SampleCsv.user_all_using_indexed_association_line_new(index: i) }.join
+      #   end
+
+      #   it do
+      #     StackProf.run(mode: :cpu, out: '/tmp/stackprof-cpu-bixformer.dump') do
+      #       expect(subject).to be_truthy
+      #     end
+      #   end
+      # end
     end
   end
 end

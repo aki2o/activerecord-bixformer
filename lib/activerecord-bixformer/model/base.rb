@@ -34,7 +34,7 @@ module ActiveRecord
         end
 
         def initialize(model_or_association_name, options)
-          @name            = model_or_association_name
+          @name            = model_or_association_name.to_s
           @options         = options
           @association_map = {}
         end
@@ -73,7 +73,7 @@ module ActiveRecord
         def parent_foreign_key
           return nil unless @parent
 
-          @parent.activerecord_constant.reflections[@name.to_s].foreign_key
+          @parent_foreign_key ||= @parent.activerecord_constant.reflections[@name].foreign_key
         end
 
         def add_association(model_or_models)
@@ -87,11 +87,12 @@ module ActiveRecord
         end
 
         def activerecord_constant
-          if @parent
-            @parent.activerecord_constant.reflections[@name.to_s].table_name.classify.constantize
-          else
-            @name.to_s.camelize.constantize
-          end
+          @activerecord_constant ||=
+            if @parent
+              @parent.activerecord_constant.reflections[@name].table_name.classify.constantize
+            else
+              @name.camelize.constantize
+            end
         end
 
         def generate_export_value_map

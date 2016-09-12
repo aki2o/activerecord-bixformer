@@ -6,9 +6,9 @@ UserSystemCode,AccountName,JoinTime,Name,E-mail,Age,PostSystemCode1,Body1,Status
 EOS
     end
 
-    def user_all_using_indexed_association_line_new
+    def user_all_using_indexed_association_line_new(index: nil)
       <<EOS
-,import-taro,2016 09 01 (15:31:21),Taro Import,"",13,,Hello!,Now on show,No,Foo,Fuga,,Good bye!,Write in Process,Yes,,,,,,,,
+,import-taro#{index},2016 09 01 (15:31:21),Taro Import,"",13,,Hello!,Now on show,No,Foo,Fuga,,Good bye!,Write in Process,Yes,,,,,,,,
 EOS
     end
   end

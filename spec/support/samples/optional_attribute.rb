@@ -3,12 +3,12 @@ class SampleOptionalAttribute
     def user_all_default
       [
         :id,
-        posts: [
+        "posts" => [
           :id,
           :status,
           :secret,
           :tags,
-          tags: [:name]
+          "tags" => [:name]
         ]
       ]
     end

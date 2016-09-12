@@ -23,7 +23,7 @@ describe ActiveRecord::Bixformer::Generator::CsvRow do
 
     context "all" do
       it do
-        expect(model.name).to eq :user
+        expect(model.name).to eq "user"
         expect(model.attribute_map.keys).to eq ["id", "account", "joined_at"]
         expect(model.association_map.keys).to eq ["profile", "posts"]
         expect(model.association_map["profile"].attribute_map.keys).to eq ["name", "email", "age"]
