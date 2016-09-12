@@ -115,7 +115,7 @@ module ActiveRecord
           # 検証条件とマージして、データベースに登録されているか確認する
           verified_condition = uniqueness_condition.merge(required_condition)
 
-          model.activerecord_constant.find_by!(verified_condition).__send__(identified_column_name)
+          find_verified_activerecord_by!(model.activerecord_constant, verified_condition).__send__(identified_column_name)
         rescue ::ActiveRecord::RecordNotFound => e
           # ID属性が指定されているのに、データベースに見つからない場合はエラーにする
           raise e if identified_value
@@ -135,6 +135,10 @@ module ActiveRecord
           return nil if unique_condition.any? { |_k, v| ! presence_value?(v) }
 
           unique_condition
+        end
+
+        def find_verified_activerecord_by!(klass, verified_uniqueness_condition)
+          klass.find_by!(verified_uniqueness_condition)
         end
 
         def identified_column_name_of(model)
