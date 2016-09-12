@@ -2,9 +2,17 @@ require 'enumerize'
 require 'wannabe_bool'
 require 'booletania'
 
+class Group < ActiveRecord::Base
+  has_many :users
+
+  validates :name, presence: true, uniqueness: true
+end
+
 class User < ActiveRecord::Base
-  has_one :profile, class_name: 'UserProfile'
-  has_many :posts
+  belongs_to :group
+
+  has_one :profile, class_name: 'UserProfile', dependent: :destroy
+  has_many :posts, dependent: :destroy
 
   accepts_nested_attributes_for :profile
   accepts_nested_attributes_for :posts
@@ -27,7 +35,7 @@ class Post < ActiveRecord::Base
 
   belongs_to :user
 
-  has_many :tags
+  has_many :tags, dependent: :destroy
 
   accepts_nested_attributes_for :tags
 

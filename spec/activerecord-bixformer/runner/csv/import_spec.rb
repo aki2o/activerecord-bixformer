@@ -8,12 +8,13 @@ describe ActiveRecord::Bixformer::Runner::Csv do
     {
       entry_definition: entry_definition,
       optional_attributes: optional_attributes,
-      unique_indexes: unique_indexes
+      unique_indexes: unique_indexes,
+      required_condition: required_condition
     }
   end
 
   describe "#import" do
-    before do
+    subject do
       ENV['TZ'] = 'Asia/Tokyo'
 
       runner.add_modeler(modeler)
@@ -26,6 +27,7 @@ describe ActiveRecord::Bixformer::Runner::Csv do
       let(:entry_definition) { SampleEntryDefinition.user_all_using_indexed_association }
       let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
       let(:unique_indexes) { SampleUniqueIndex.user_all_default }
+      let(:required_condition) { {} }
 
       context "new record" do
         let(:csv_data) do
@@ -36,9 +38,11 @@ EOS
         end
 
         it do
+          expect(subject).to be_truthy
+          expect(runner.errors).to eq []
+
           imported_user = User.find_by(account: 'import-taro')
 
-          expect(runner.errors).to eq []
           expect(imported_user).not_to be_nil
           expect(imported_user.joined_at).to eq Time.new(2016, 9, 1, 15, 31, 21, "+09:00")
           expect(imported_user.profile.name).to eq 'Taro Import'
@@ -81,9 +85,11 @@ EOS
         end
 
         it do
+          expect(subject).to be_truthy
+          expect(runner.errors).to eq []
+
           imported_user = User.find_by(account: account)
 
-          expect(runner.errors).to eq []
           expect(imported_user).not_to be_nil
 
           expect(imported_user.joined_at).to eq joined_at          # changed
@@ -136,6 +142,8 @@ EOS
         end
 
         it do
+          expect(subject).to be_truthy
+
           unused_user = User.find_by(account: account)
 
           expect(unused_user).to be_nil
@@ -151,8 +159,80 @@ EOS
         end
 
         it do
+          expect(subject).to be_falsy
           expect(runner.errors.size).to eq 1
           expect(runner.errors[0]).to eq 'Entry(1): TagNameOfPostByUser is too long (maximum is 5 characters)'
+        end
+      end
+
+      context "invalid id child record" do
+        let(:user) { User.find_or_create_by!(account: 'invalid-id-child', joined_at: Time.current) }
+        let(:post_id) { user.posts.find_or_create_by!(content: 'Wrong user!', status: :published).id }
+        let(:other_user) { User.find_by(account: 'sample-taro') }
+
+        let(:csv_data) do
+          <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{other_user.id},sample-taro,#{other_user.joined_at.to_s(:ymdhms)},Taro Invalid,"",60,#{post_id},Wrong user!,Edit disabled,No,Foo,,,,,,,,,,,,,
+EOS
+        end
+
+        it 'abort without any changes' do
+          expect{subject}.to raise_error(ActiveRecord::RecordNotFound)
+
+          expect(Post.find(post_id).user_id).to eq user.id
+          expect(other_user.profile.name).to eq 'Taro Sample'
+        end
+      end
+
+      context "invalid id root record" do
+        let(:group) { Group.find_or_create_by!(name: 'New Group') }
+        let(:other_group) { Group.find_or_create_by!(name: 'Other Group') }
+        let(:account) { 'invalid-id-root' }
+
+        let(:user) { User.find_or_create_by!(group: other_group, account: account, joined_at: Time.current) }
+
+        let(:csv_data) do
+          <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{user.id},invalid-id-root,#{user.joined_at.to_s(:ymdhms)},Taro in wrong group,"",60,,belongs to wrong group!,Edit disabled,No,Foo,,,,,,,,,,,,,
+EOS
+        end
+
+        context "has not required condition" do
+          it "succeed normally" do
+            expect(subject).to be_truthy
+            expect(runner.errors).to eq []
+
+            imported_user = User.find_by(account: account)
+
+            expect(imported_user).not_to be_nil
+            expect(imported_user.group_id).to eq other_group.id
+            expect(imported_user.profile.name).to eq 'Taro in wrong group'
+            expect(imported_user.posts.size).to eq 1
+            expect(imported_user.posts[0].content).to eq 'belongs to wrong group!'
+            expect(imported_user.posts[0].tags.size).to eq 1
+            expect(imported_user.posts[0].tags[0].name).to eq 'Foo'
+          end
+        end
+
+        context "has required condition" do
+          let(:required_condition) { { group_id: group.id } }
+
+          before do
+            User.find_by(account: account).destroy!
+          end
+
+          it "abort without any changes" do
+            expect{subject}.to raise_error(ActiveRecord::RecordNotFound)
+
+            imported_user = User.find_by(account: account)
+
+            expect(imported_user).not_to be_nil
+            expect(imported_user.group_id).to eq other_group.id
+            expect(imported_user.profile).to be_nil
+            expect(imported_user.posts.size).to eq 0
+          end
         end
       end
     end

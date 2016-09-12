@@ -11,6 +11,9 @@ module SampleModelerFunctions
   def unique_indexes
     @options[:unique_indexes] || super
   end
+  def required_condition
+    @options[:required_condition] || super
+  end
 end
 
 class SampleCsvModeler < ActiveRecord::Bixformer::Modeler::Csv

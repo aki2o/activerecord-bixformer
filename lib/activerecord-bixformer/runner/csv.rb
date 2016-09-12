@@ -37,7 +37,7 @@ module ActiveRecord
             raise ::ActiveRecord::Rollback unless @errors.empty?
           end
 
-          @errors.empty?
+          @errors.empty? ? true : false
         end
 
         def export(active_records_or_relation, options = {})
