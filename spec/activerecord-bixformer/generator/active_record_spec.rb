@@ -7,12 +7,14 @@ describe ActiveRecord::Bixformer::Generator::ActiveRecord do
     {
       entry_definition: SampleEntryDefinition.user_all_using_indexed_association,
       optional_attributes: optional_attributes,
-      unique_indexes: unique_indexes
+      unique_indexes: unique_indexes,
+      required_condition: required_condition
     }
   end
 
   let(:optional_attributes) { [] }
   let(:unique_indexes) { [] }
+  let(:required_condition) { {} }
 
   let(:data_source) do
     csv_data = <<EOS
@@ -108,6 +110,26 @@ EOS
             { id: 1, content: "Good bye!", status: "protected", secret: false, user_id: 1, tags_attributes: [{ name: "Foo", post_id: 1, id: 3 }] },
             { id: 2, content: nil, status: "wip", secret: false, user_id: 1, tags_attributes: [{ name: "Bar", post_id: 2 }] },
             { content: "New Post!", status: "wip", secret: true, user_id: 1 }
+          ]
+        }.with_indifferent_access
+      end
+
+      it { is_expected.to eq expect_value }
+    end
+
+    context "has required_condition" do
+      let(:group_id) { Group.find_by(name: 'Sample').id }
+      let(:required_condition) { { group_id: group_id } }
+
+      let(:expect_value) do
+        {
+          account: "import-taro",
+          group_id: group_id,
+          joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
+          profile_attributes: { name: "Taro Import", email: nil, age: "13" },
+          posts_attributes: [
+            { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
+            { content: "Good bye!", status: "wip", secret: true, tags_attributes: [] }
           ]
         }.with_indifferent_access
       end

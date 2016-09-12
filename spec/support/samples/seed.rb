@@ -1,4 +1,6 @@
-user = User.new(account: 'sample-taro', joined_at: Time.current)
+group = Group.create!(name: 'Sample')
+
+user = User.new(account: 'sample-taro', joined_at: Time.current, group: group)
 user.save!
 
 user.build_profile(name: 'Taro Sample', age: 24).save!

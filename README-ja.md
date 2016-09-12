@@ -172,18 +172,18 @@ end
 
 ### required_condition
 
-インポート時に、 `model_name` のインポートデータに `primary_key` がある場合、それが正しい値かどうかを
-検証するための条件を定義した以下のようなハッシュを返して下さい。  
+インポート時に、 `model_name` のインポートデータに追加する条件を定義した以下のようなハッシュを返して下さい。  
 
 ```ruby
 {
-  # 対象モデル（上の例なら user ）は、現在処理対象になっている group に属しているはず
+  # 対象モデル（上の例なら user ）は、現在処理対象になっている group に属している
   group_id: current_group.id
 }
 ```
 
 * `primary_key` や `unique_indexes` が指定されている場合のデータベース検索の条件に追加されます
 * 関連モデルの場合は、親レコードの foreign_key が代わりに使用されます
+* `primary_key` が指定されているのに、データベース検索に失敗した場合には、 `ActiveRecord::RecordNotFound` 例外が raise されます
 
 ### default_values
 

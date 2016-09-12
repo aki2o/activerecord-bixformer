@@ -20,6 +20,7 @@ module ActiveRecord
           # 必須な属性が渡されていない場合には、取り込みしない
           return {} if required_attributes.any? { |attribute_name| ! presence_value?(attribute_value_map[attribute_name]) }
 
+          set_required_condition(model, attribute_value_map)
           set_parent_key(model, attribute_value_map, identified_column_name)
           set_activerecord_id(model, attribute_value_map, identified_column_name)
 
@@ -47,9 +48,18 @@ module ActiveRecord
           association_value_map
         end
 
+        def set_required_condition(model, attribute_value_map)
+          return if model.parent
+
+          attribute_value_map.merge!(@modeler.required_condition)
+        end
+
         def set_parent_key(model, attribute_value_map, identified_column_name)
           # 結果ハッシュが空なら、取り込みしないように追加はしない
           return unless presence_value?(attribute_value_map)
+
+          # 設定するのは親がいる場合のみ
+          return unless model.parent
 
           parent_id = model.parent&.activerecord_id
 
