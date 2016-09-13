@@ -22,24 +22,18 @@ module ActiveRecord
         def translate(type_key, extra_key, arguments)
           root_scope    = normalize_scope_value(@config[:scope] || 'activerecord')
           extend_scopes = @config[:extend_scopes] || []
-          arguments     = ( arguments || {} ).merge(raise: true)
+          arguments     = arguments || {}
           model_key     = [*@model.parents, @model].map(&:name).join('/')
 
-          extend_scopes.each do |extend_scope|
-            extend_scope = normalize_scope_value(extend_scope)
-            extend_scope = '.' + extend_scope if extend_scope.present?
-
-            begin
-              # 成功なら、それを返却
-              return ::I18n.t("#{root_scope}#{extend_scope}.#{type_key}.#{model_key}#{extra_key}", arguments)
-            rescue ::I18n::MissingTranslationData
-              # 見つからなければ、次を試す
-              next
-            end
+          key_candidates = [*extend_scopes.map { |s| ".#{normalize_scope_value(s)}" }, ''].map do |extend_scope|
+            "#{root_scope}#{extend_scope}.#{type_key}.#{model_key}#{extra_key}"
           end
 
-          # 拡張部分を使った translation が見つからなかった場合は、拡張部分なしで translation を実行
-          ::I18n.t("#{root_scope}.#{type_key}.#{model_key}#{extra_key}", arguments)
+          found_key = key_candidates.find { |key| ::I18n.exists?(key) }
+
+          raise ::I18n::MissingTranslationData.new(::I18n.locale, key_candidates.last, arguments) unless found_key
+
+          ::I18n.t(found_key, arguments || {})
         end
 
         def normalize_scope_value(scope_value)

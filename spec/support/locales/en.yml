@@ -25,6 +25,10 @@ en:
         content: Body%{index}
       user/posts/tags:
         name: TagName%{index}
+    extended:
+      attributes:
+        user:
+          account: NewAccountName
   activerecord:
     attributes:
       user/posts/tags:
