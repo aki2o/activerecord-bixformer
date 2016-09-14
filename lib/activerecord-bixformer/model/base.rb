@@ -1,6 +1,21 @@
 module ActiveRecord
   module Bixformer
     module Model
+      # @attr [Object] data_source
+      # @attr [Integer] activerecord_id
+      # @attr_reader [String] name
+      #   the name or association name of handled ActiveRecord
+      # @attr_reader [ActiveRecord::Bixformer::Model::Base] parent
+      #   the instance has parent association.
+      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Attribute::Base>] attribute_map
+      #   the import/export target attribute names and its instance.
+      # @attr_reader [Array<String>] optional_attributes
+      #   the list of attribute name to not make key if its value is blank.
+      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Model::Base>] association_map
+      #   the import/export target association names and its instance.
+      # @attr_reader [ActiveRecord::Bixformer::Translator::I18n] translator
+      # @attr_reader [ActiveRecord::Bixformer::Modeler::Base] modeler
+      #   active modeler in the import/export process.
       class Base
         attr_accessor :data_source,
                       :activerecord_id
@@ -70,6 +85,7 @@ module ActiveRecord
           @parent ? [*parent.parents, @parent] : []
         end
 
+        # @return [String] the foreign key name to associate to parent ActiveRecord.
         def parent_foreign_key
           return nil unless @parent
 
@@ -86,6 +102,7 @@ module ActiveRecord
           models.each { |model| model.set_parent(self) }
         end
 
+        # @return [Constant] the constant value of handling ActiveRecord.
         def activerecord_constant
           @activerecord_constant ||=
             if @parent
