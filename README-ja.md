@@ -35,7 +35,7 @@ gem 'activerecord-bixformer'
 
 本フレームワークの構成要素と役割は以下のようになっています。
 
-### Modeler
+### Plan
 
 インポート/エクスポートの一連の処理をどのように処理するかを定義する設定ファイルの役割です。  
 処理実行時に、複数登録された本クラスのインスタンス群から採用するものを決定するフローになっていて、
@@ -51,27 +51,27 @@ gem 'activerecord-bixformer'
 ActiveRecord のモデルに対応して、そのモデルのインポート/エクスポート処理を担当するクラスです。  
 
 ActiveRecord::Bixformer::Model::Base を継承した独自クラスを定義し、  
-Modelerを適切に定義することで、それを使用して処理内容を切り替えることができます。  
+Planを適切に定義することで、それを使用して処理内容を切り替えることができます。  
 
 ### Attribute
 
 ActiveRecord のモデルの持つ属性に対応して、その属性のインポート/エクスポート処理を担当するクラスです。  
 
 ActiveRecord::Bixformer::Attribute::Base を継承した独自クラスを定義し、  
-Modelerを適切に定義することで、それを使用して処理内容を切り替えることができます。  
+Planを適切に定義することで、それを使用して処理内容を切り替えることができます。  
 
 # 使い方
 
-## 1. Modelerの実装
+## 1. Planの実装
 
-ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッドを適切に設定して下さい。  
+ActiveRecord::Bixformer::Plan::Base を継承して、以下のメソッドを適切に設定して下さい。  
 
 ### model_name
 
 インポート/エクスポート対象のモデル名を返して下さい。  
 例えばusersテーブルのデータが対象であれば、 `:user` です。  
 
-### entry_definition
+### entry
 
 インポート/エクスポート対象の属性と、それをどのように処理するかを定義した以下のようなハッシュを返して下さい。  
 
@@ -110,7 +110,7 @@ ActiveRecord::Bixformer::Modeler::Base を継承して、以下のメソッド�
 
 ```ruby
 [
-  # 対象モデル（上の例なら user ）の属性名。 entry_definition で定義されていること
+  # 対象モデル（上の例なら user ）の属性名。 entry で定義されていること
   :name,
   
   # 関連名も指定可能。この場合は、その関連モデルの処理対象の属性全てが有効な値でない場合
@@ -225,8 +225,8 @@ end
 
 ### module_load_namespaces
 
-`entry_definition` で指定されたクラス名のクラスを探索する namespace を定義した配列を返して下さい。  
-ActiveRecord::Bixformer::Modeler::Base には、以下のように定義されています。  
+`entry` で指定されたクラス名のクラスを探索する namespace を定義した配列を返して下さい。  
+ActiveRecord::Bixformer::Plan::Base には、以下のように定義されています。  
 
 ```ruby
 def module_load_namespaces(module_type)
@@ -248,7 +248,7 @@ CSVを扱う簡単なサンプルコードは以下のような感じになり�
 ```ruby
 runner = ActiveRecord::Bixformer::Runner::Csv.new
 
-runner.add_modeler(Your::Modeler.new)
+runner.add_plan(Your::Plan.new)
 
 csv_data = runner.export(User.all, force_quotes: true)
 

@@ -1,80 +1,57 @@
 module ActiveRecord
   module Bixformer
     module Model
-      # @attr [Object] data_source
-      # @attr [Integer] activerecord_id
       # @attr_reader [String] name
       #   the name or association name of handled ActiveRecord
       # @attr_reader [ActiveRecord::Bixformer::Model::Base] parent
       #   the instance has parent association.
-      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Attribute::Base>] attribute_map
+      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Attribute::Base>] attributes
       #   the import/export target attribute names and its instance.
       # @attr_reader [Array<String>] optional_attributes
       #   the list of attribute name to not make key if its value is blank.
-      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Model::Base>] association_map
+      # @attr_reader [Hash<String, ActiveRecord::Bixformer::Model::Base>] associations
       #   the import/export target association names and its instance.
       # @attr_reader [ActiveRecord::Bixformer::Translator::I18n] translator
-      # @attr_reader [ActiveRecord::Bixformer::Modeler::Base] modeler
-      #   active modeler in the import/export process.
+      # @attr_reader [ActiveRecord::Bixformer::Plan::Base] plan
+      #   active plan in the import/export process.
       class Base
-        attr_accessor :data_source,
-                      :activerecord_id
+        include ::ActiveRecord::Bixformer::ImportValueValidatable
 
-        attr_reader :name,
-                    :parent,
-                    :attribute_map,
+        attr_reader :name, :parent,
+                    :attributes, :associations,
                     :optional_attributes,
-                    :association_map,
                     :translator,
-                    :modeler
-
-        class << self
-          def new_as_association_for_import(parent, association_name, options)
-            raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
-          end
-
-          def new_as_association_for_export(parent, association_name, options)
-            model = self.new(association_name, options)
-
-            model.data_source = parent.data_source && parent.data_source.__send__(association_name) # parent.data_source is ActiveRecord::Base
-
-            unless model.data_source.is_a?(::ActiveRecord::Base)
-              parent_name = model.parents.map(&:name).join('.')
-
-              raise ::ArgumentError.new "#{parent_name}.#{association_name} is not a ActiveRecord instance"
-            end
-
-            model
-          end
-        end
+                    :options
 
         def initialize(model_or_association_name, options)
-          @name            = model_or_association_name.to_s
-          @options         = options
-          @association_map = {}
+          @name         = model_or_association_name.to_s
+          @options      = options
+          @associations = []
         end
 
-        def setup_with_modeler(modeler)
-          @modeler = modeler
+        def setup(plan)
+          @plan = ActiveRecord::Bixformer::PlanAccessor.new(plan)
 
-          entry_definition = @modeler.config_value_for(self, :entry_definition, {})
+          entry = @plan.pickup_value_for(self, :entry, {})
 
-          @attribute_map = (entry_definition[:attributes] || {}).map do |attribute_name, attribute_value|
-            attribute_type, attribute_options = @modeler.parse_to_type_and_options(attribute_value)
+          @attributes = (entry[:attributes] || {}).map do |attribute_name, attribute_value|
+            attribute_type, attribute_options = @plan.parse_to_type_and_options(attribute_value)
 
-            attribute = @modeler.new_module_instance(:attribute, attribute_type, self, attribute_name, attribute_options)
+            @plan.new_module_instance(:attribute, attribute_type, self, attribute_name, attribute_options)
+          end
 
-            [attribute_name, attribute]
-          end.to_h
-
-          @optional_attributes = @modeler.config_value_for(self, :optional_attributes, [])
-          @default_values   = @modeler.config_value_for(self, :default_values, {})
+          @optional_attributes = @plan.pickup_value_for(self, :optional_attributes, [])
+          @default_values      = @plan.pickup_value_for(self, :default_values, {})
 
           # At present, translation function is only i18n
           @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
 
-          @translator.config = @modeler.translation_config.dup
-          @translator.model    = self
+          @translator.config = @plan.value_of(:translation_config).dup
+          @translator.model  = self
+        end
+
+        def plan
+          @plan.raw_value
         end
 
         def set_parent(model)
@@ -92,14 +69,10 @@ module ActiveRecord
           @parent_foreign_key ||= @parent.activerecord_constant.reflections[@name].foreign_key
         end
 
-        def add_association(model_or_models)
-          models = model_or_models.is_a?(::Array) ? model_or_models : [model_or_models]
+        def add_association(model)
+          @associations.push(model)
 
-          association_name = models.first.name
-
-          @association_map[association_name] = model_or_models
-
-          models.each { |model| model.set_parent(self) }
+          model.set_parent(self)
         end
 
         # @return [Constant] the constant value of handling ActiveRecord.
@@ -112,54 +85,50 @@ module ActiveRecord
             end
         end
 
-        def generate_export_value_map
-          @attribute_map.keys.map do |attribute_name|
-            [attribute_name, make_export_value(attribute_name)]
-          end.to_h.with_indifferent_access
-        end
-
-        def generate_import_value_map
-          value_map = {}.with_indifferent_access
-
-          @attribute_map.keys.each do |attribute_name|
-            attribute_value = make_import_value(attribute_name)
-
-            attribute_value = @default_values[attribute_name] unless presence_value?(attribute_value)
-
-            # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
-            next if ! presence_value?(attribute_value) &&
-                    @optional_attributes.include?(attribute_name.to_s)
-
-            value_map[attribute_name] = attribute_value
-          end
-
-          value_map
+        def find_activerecord_by!(condition)
+          activerecord_constant.find_by!(condition)
         end
 
         private
 
-        def make_export_value(attribute_name)
-          return nil unless @data_source
+        def make_each_attribute_import_value(parent_activerecord_id = nil, &block)
+          values     = {}.with_indifferent_access
+          normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_activerecord_id)
 
-          attribute                   = @attribute_map[attribute_name]
-          data_source_attribute_value = @data_source.__send__(attribute_name)
+          @attributes.each do |attr|
+            attribute_value = block.call(attr)
 
-          attribute.make_export_value(data_source_attribute_value)
-        end
+            attribute_value = @default_values[attr.name] unless presence_value?(attribute_value)
 
-        def make_import_value(attribute_name)
-          raise ::NotImplementedError.new "You must implement #{self.class}##{__method__}"
-        end
+            # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
+            next if ! presence_value?(attribute_value) &&
+                    @optional_attributes.include?(attr.name.to_s)
 
-        def presence_value?(value)
-          case value
-          when ::String
-            ! value.blank?
-          when ::TrueClass, ::FalseClass
-            true
-          else
-            value ? true : false
+            values[attr.name] = attribute_value
           end
+
+          normalizer.normalize(values)
+        end
+
+        def make_each_association_import_value(values, &block)
+          self_activerecord_id = values[activerecord_constant.primary_key]
+
+          @associations.each do |association|
+            association_value = block.call(association, self_activerecord_id)
+
+            if association_value.is_a?(::Array)
+              # has_many な場合は、配列が返ってくるが、空と思われる要素は結果に含めない
+              association_value = association_value.reject { |v| ! presence_value?(v) }
+            end
+
+            # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
+            next if ! presence_value?(association_value) &&
+                    @optional_attributes.include?(association.name.to_s)
+
+            values["#{association.name}_attributes".to_sym] = association_value
+          end
+
+          values
         end
       end
     end

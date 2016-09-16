@@ -1,4 +1,4 @@
-class SampleEntryDefinition
+class SampleEntry
   class << self
     def user_all_using_indexed_association
       {

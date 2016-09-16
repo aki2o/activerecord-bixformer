@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe ActiveRecord::Bixformer::Generator::ActiveRecord do
-  let(:generator) { ActiveRecord::Bixformer::Generator::ActiveRecord.new(SampleCsvModeler.new(modeler_options), data_source) }
-
-  let(:modeler_options) do
+describe ActiveRecord::Bixformer::From::Csv do
+  let(:bixformer) { ActiveRecord::Bixformer::From::Csv.new(plan) }
+  let(:plan) { SampleUserPlan.new(plan_options) }
+  let(:plan_options) do
     {
-      entry_definition: SampleEntryDefinition.user_all_using_indexed_association,
+      entry: SampleEntry.user_all_using_indexed_association,
       optional_attributes: optional_attributes,
       unique_indexes: unique_indexes,
       required_condition: required_condition
@@ -16,40 +16,20 @@ describe ActiveRecord::Bixformer::Generator::ActiveRecord do
   let(:unique_indexes) { [] }
   let(:required_condition) { {} }
 
-  let(:data_source) do
-    csv_data = <<EOS
-#{SampleCsv.user_all_using_indexed_association_title.chomp}
-#{SampleCsv.user_all_using_indexed_association_line_new.chomp}
-EOS
-    CSV.parse(csv_data, headers: true).first
-  end
-
   before do
     ENV['TZ'] = 'Asia/Tokyo'
   end
 
-  describe "#compile" do
-    let(:model) { generator.compile }
+  describe "#assignable_attributes" do
+    subject { bixformer.assignable_attributes(csv_row) }
 
-    context "all" do
-      it do
-        expect(model.name).to eq "user"
-        expect(model.attribute_map.keys).to eq ["id", "account", "joined_at"]
-        expect(model.association_map.keys).to eq ["profile", "posts"]
-        expect(model.association_map["profile"].attribute_map.keys).to eq ["name", "email", "age"]
-        expect(model.association_map["posts"]).to be_an_instance_of Array
-        expect(model.association_map["posts"].size).to eq 3
-        expect(model.association_map["posts"].first.attribute_map.keys).to eq ["id", "content", "status", "secret"]
-        expect(model.association_map["posts"].first.association_map.keys).to eq ["tags"]
-        expect(model.association_map["posts"].first.association_map["tags"]).to be_an_instance_of Array
-        expect(model.association_map["posts"].first.association_map["tags"].size).to eq 2
-        expect(model.association_map["posts"].first.association_map["tags"].first.attribute_map.keys).to eq ["name"]
-      end
+    let(:csv_row) do
+      csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{SampleCsv.user_all_using_indexed_association_line_new.chomp}
+EOS
+      CSV.parse(csv_data, headers: true).first
     end
-  end
-
-  describe "#generate" do
-    subject { generator.generate }
 
     context "no optional_attributes" do
       let(:expect_value) do
@@ -89,7 +69,7 @@ EOS
       let(:user) { User.find_by(account: 'sample-taro') }
       let(:joined_at) { Time.new(2016, 9, 1, 15, 31, 21, "+09:00") }
 
-      let(:data_source) do
+      let(:csv_row) do
         csv_data = <<EOS
 #{SampleCsv.user_all_using_indexed_association_title.chomp}
 #{user.id},sample-taro,#{joined_at.to_s(:ymdhms)},Taro U Sample,"",60,#{user.posts[0].id},Good bye!,Edit disabled,No,Foo,,#{user.posts[1].id},"",Write in Process,No,Bar,,,New Post!,Write in Process,Yes,,
@@ -135,6 +115,78 @@ EOS
       end
 
       it { is_expected.to eq expect_value }
+    end
+
+    context "invalid id child record" do
+      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+
+      let(:user) { User.find_or_create_by!(account: 'invalid-id-child', joined_at: Time.current) }
+      let(:post_id) { user.posts.find_or_create_by!(content: 'Wrong user!', status: :published).id }
+      let(:other_user) { User.find_by(account: 'sample-taro') }
+
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{other_user.id},sample-taro,#{other_user.joined_at.to_s(:ymdhms)},Taro Invalid,"",60,#{post_id},Wrong user!,Edit disabled,No,Foo,,,,,,,,,,,,,
+EOS
+        CSV.parse(csv_data, headers: true).first
+      end
+
+      it 'abort' do
+        expect{subject}.to raise_error(ActiveRecord::RecordNotFound)
+      end
+    end
+
+    context "invalid id root record" do
+      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+
+      let(:group) { Group.find_or_create_by!(name: 'New Group') }
+      let(:other_group) { Group.find_or_create_by!(name: 'Other Group') }
+      let(:account) { 'invalid-id-root' }
+      let(:joined_at) { Time.new(2016, 9, 1, 15, 31, 21, "+09:00") }
+
+      let(:user) { User.find_or_create_by!(group: other_group, account: account, joined_at: joined_at) }
+
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{user.id},invalid-id-root,#{joined_at.to_s(:ymdhms)},Taro in wrong group,"",60,,belongs to wrong group!,Edit disabled,No,Foo,,,,,,,,,,,,,
+EOS
+
+        CSV.parse(csv_data, headers: true).first
+      end
+
+      context "has not required condition" do
+        let(:expect_value) do
+          user_id = User.find_by(account: account).id
+
+          {
+            id: user_id,
+            account: account,
+            joined_at: joined_at,
+            profile_attributes: { name: "Taro in wrong group", email: nil, age: "60", user_id: user_id },
+            posts_attributes: [
+              { content: "belongs to wrong group!", status: "protected", secret: false, user_id: user_id, tags_attributes: [{name: "Foo"}] }
+            ]
+          }.with_indifferent_access
+        end
+
+        it "succeed normally" do
+          is_expected.to eq expect_value
+        end
+      end
+
+      context "has required condition" do
+        let(:required_condition) { { group_id: group.id } }
+
+        before do
+          User.find_by(account: account)&.destroy!
+        end
+
+        it "abort" do
+          expect{subject}.to raise_error(ActiveRecord::RecordNotFound)
+        end
+      end
     end
   end
 end

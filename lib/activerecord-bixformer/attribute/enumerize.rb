@@ -3,9 +3,11 @@ module ActiveRecord
     module Attribute
       class Enumerize < ::ActiveRecord::Bixformer::Attribute::Base
         def make_export_value(active_record_value)
-          return nil unless @model.data_source
+          active_record_value = active_record_value.to_s
 
-          @model.data_source.__send__("#{@name}_text")
+          @model.activerecord_constant.__send__(@name).options.find do |text, key|
+            key == active_record_value
+          end&.first
         end
 
         def make_import_value(value)

@@ -1,11 +1,12 @@
 require 'spec_helper'
 
-describe ActiveRecord::Bixformer::Modeler::Base do
-  let(:modeler) { SampleCsvModeler.new(modeler_options) }
-  let(:modeler_options) { {} }
+describe ActiveRecord::Bixformer::PlanAccessor do
+  let(:plan) { ActiveRecord::Bixformer::PlanAccessor.new(raw_plan) }
+  let(:raw_plan) { SampleUserPlan.new(plan_options) }
+  let(:plan_options) { {} }
 
   describe "#parse_to_type_and_options" do
-    subject { modeler.parse_to_type_and_options(value) }
+    subject { plan.parse_to_type_and_options(value) }
 
     context "with hash" do
       let(:value) { [:indexed, size: 2] }
@@ -14,12 +15,12 @@ describe ActiveRecord::Bixformer::Modeler::Base do
     end
   end
 
-  describe "#config_value_for" do
-    subject { modeler.config_value_for(model, config_name, default_value) }
+  describe "#pickup_value_for" do
+    subject { plan.pickup_value_for(model, config_name, default_value) }
 
-    let(:modeler_options) do
+    let(:plan_options) do
       {
-        entry_definition: SampleEntryDefinition.user_all_using_indexed_association,
+        entry: SampleEntry.user_all_using_indexed_association,
         optional_attributes: SampleOptionalAttribute.user_all_default
       }
     end
@@ -30,7 +31,7 @@ describe ActiveRecord::Bixformer::Modeler::Base do
       let(:model) do
         parent_model = ActiveRecord::Bixformer::Model::Csv::Base.new(:user, nil)
 
-        model = ActiveRecord::Bixformer::Model::Csv::Indexed.new_as_association_for_export(parent_model, :posts, size: 1).first
+        model = ActiveRecord::Bixformer::Model::Csv::Indexed.new(:posts, size: 1)
 
         parent_model.add_association(model)
 
@@ -43,7 +44,7 @@ describe ActiveRecord::Bixformer::Modeler::Base do
         it do
           is_expected.to eq ["id", "status", "secret", "tags"]
 
-          expect(modeler.optional_attributes).to eq SampleOptionalAttribute.user_all_default
+          expect(plan.value_of(:optional_attributes)).to eq SampleOptionalAttribute.user_all_default
         end
       end
     end

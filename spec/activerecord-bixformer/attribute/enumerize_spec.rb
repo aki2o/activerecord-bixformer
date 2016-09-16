@@ -6,29 +6,24 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
   let(:attribute_name) { :status }
 
   describe "#make_export_value" do
-    subject { attribute.make_export_value('') }
+    subject { attribute.make_export_value(value) }
 
-    context "no data_source" do
+    context "no value" do
+      let(:value) { nil }
 
       it { is_expected.to eq nil }
     end
 
-    context "has data_source" do
-      before do
-        model.data_source = Post.new(user_id: 1, status: status)
-      end
+    context "invalid value" do
+      let(:value) { :hoge }
 
-      context "no value" do
-        let(:status) { nil }
+      it { is_expected.to eq nil }
+    end
 
-        it { is_expected.to eq nil }
-      end
+    context "valid value" do
+      let(:value) { :published }
 
-      context "has value" do
-        let(:status) { :published }
-
-        it { is_expected.to eq 'Now on show' }
-      end
+      it { is_expected.to eq 'Now on show' }
     end
   end
 

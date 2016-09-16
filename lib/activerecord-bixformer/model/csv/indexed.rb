@@ -3,47 +3,54 @@ module ActiveRecord
     module Model
       module Csv
         class Indexed < ::ActiveRecord::Bixformer::Model::Csv::Base
-          class << self
-            def new_as_association_for_import(parent, association_name, options)
-              options    = options.is_a?(Hash) ? options : {}
-              limit_size = options[:size] || 1
+          def initialize(model_or_association_name, options)
+            super
 
-              (1..limit_size).map do |index|
-                model = self.new(association_name, options.merge(index: index))
+            @options = options.is_a?(::Hash) ? options : {}
 
-                model.data_source = parent.data_source # parent.data_source is CSV::Row
+            @options[:size] ||= 1
+          end
 
-                model
-              end
-            end
+          def make_export_value(activerecord_or_activerecords)
+            activerecord_or_activerecords ||= []
 
-            def new_as_association_for_export(parent, association_name, options)
-              options      = options.is_a?(Hash) ? options : {}
-              limit_size   = options[:size] || 1
-              associations = parent.data_source ? parent.data_source.__send__(association_name).to_a : []
+            # has_many でしか使わない想定なので activerecord_or_activerecords は Array のはず
+            (1..options[:size]).inject({}) do |values, index|
+              update_translator(index)
 
-              (1..limit_size).map do |index|
-                model = self.new(association_name, options.merge(index: index))
-
-                model.data_source = associations[index - 1]
-
-                model
-              end
+              values.merge(super(activerecord_or_activerecords[index-1]))
             end
           end
 
-          def setup_with_modeler(modeler)
-            super
+          def make_import_value(csv_row, parent_activerecord_id = nil)
+            # has_many でしか使わない想定なので Array を返却
+            (1..options[:size]).map do |index|
+              update_translator(index)
 
-            @translator.model_arguments = { index: @options[:index] }
+              super
+            end
+          end
 
-            @translator.attribute_arguments_map = @attribute_map.keys.map do |attribute_name|
-              [attribute_name, { index: @options[:index] }]
+          def csv_titles
+            (1..options[:size]).flat_map do |index|
+              update_translator(index)
+
+              super
+            end
+          end
+
+          private
+
+          def update_translator(index)
+            @translator.model_arguments = { index: index }
+
+            @translator.attribute_arguments_map = @attributes.map do |attr|
+              [attr.name, { index: index }]
             end.to_h
           end
 
           def csv_title(attribute_name)
-            if parents.find { |parent| parent.is_a?(ActiveRecord::Bixformer::Model::Csv::Indexed) }
+            if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Indexed) }
               parents.map { |parent| parent.translator.translate_model }.join + super
             else
               super

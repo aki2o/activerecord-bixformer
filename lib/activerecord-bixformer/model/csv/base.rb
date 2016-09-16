@@ -3,42 +3,50 @@ module ActiveRecord
     module Model
       module Csv
         class Base < ::ActiveRecord::Bixformer::Model::Base
-          class << self
-            def new_as_association_for_import(parent, association_name, options)
-              model = self.new(association_name, options)
+          def make_export_value(activerecord_or_activerecords)
+            # has_one でしか使わない想定なので activerecord_or_activerecords は ActiveRecord::Base のはず
+            values = @attributes.map do |attr|
+              attribute_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(attr.name)
 
-              model.data_source = parent.data_source # parent.data_source is CSV::Row
+              [csv_title(attr.name), attr.make_export_value(attribute_value)]
+            end.to_h.with_indifferent_access
 
-              model
+            @associations.inject(values) do |each_values, association|
+              association_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(association.name)
+
+              association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
+
+              each_values.merge(association.make_export_value(association_value))
             end
           end
 
-          def csv_title(attribute_name)
-            @translator.translate_attribute(attribute_name)
+          def make_import_value(csv_row, parent_activerecord_id = nil)
+            values = make_each_attribute_import_value(parent_activerecord_id) do |attr|
+              csv_value = csv_row[csv_title(attr.name)]
+
+              attr.make_import_value(csv_value)
+            end
+
+            make_each_association_import_value(values) do |association, self_activerecord_id|
+              association.make_import_value(csv_row, self_activerecord_id)
+            end
           end
 
-          def available_csv_titles
+          def csv_titles
             [
-              *@attribute_map.keys.map do |attribute_name|
-                csv_title(attribute_name)
-              end,
-              *@association_map.values.flat_map do |model_or_models|
-                models = model_or_models.is_a?(::Array) ? model_or_models : [model_or_models]
-
-                models.flat_map { |m| m.available_csv_titles }
-              end
+              *@attributes.map { |attr| csv_title(attr.name) },
+              *@associations.flat_map(&:csv_titles)
             ]
+          end
+
+          def parse_self_data_source(csv_row)
+            csv_row
           end
 
           private
 
-          def make_import_value(attribute_name)
-            return nil unless @data_source
-
-            attribute                   = @attribute_map[attribute_name]
-            data_source_attribute_value = @data_source[csv_title(attribute_name)]
-
-            attribute.make_import_value(data_source_attribute_value)
+          def csv_title(attribute_name)
+            @translator.translate_attribute(attribute_name)
           end
         end
       end

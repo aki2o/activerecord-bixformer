@@ -1,9 +1,6 @@
-module SampleModelerFunctions
-  def model_name
-    @options[:model_name] || :user
-  end
-  def entry_definition
-    @options[:entry_definition] || super
+module SamplePlanFunctions
+  def entry
+    @options[:entry] || super
   end
   def optional_attributes
     @options[:optional_attributes] || super
@@ -16,8 +13,11 @@ module SampleModelerFunctions
   end
 end
 
-class SampleCsvModeler < ActiveRecord::Bixformer::Modeler::Csv
-  include SampleModelerFunctions
+class SampleUserPlan
+  include ActiveRecord::Bixformer::Plan
+  include SamplePlanFunctions
+
+  bixformer_for :user
 
   def initialize(options = {})
     @options = options

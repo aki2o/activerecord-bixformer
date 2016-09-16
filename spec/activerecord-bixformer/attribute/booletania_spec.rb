@@ -6,29 +6,30 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
   let(:attribute_name) { :secret }
 
   describe "#make_export_value" do
-    subject { attribute.make_export_value(nil) }
+    subject { attribute.make_export_value(value) }
 
-    context "no data_source" do
+    context "no value" do
+      let(:value) { nil }
 
       it { is_expected.to eq nil }
     end
 
-    context "has data_source" do
-      before do
-        model.data_source = Post.create!(user_id: 99, status: :wip, secret: secret)
-      end
+    context "invalid value" do
+      let(:value) { :hoge }
 
-      context "true value" do
-        let(:secret) { true }
+      it { is_expected.to eq nil }
+    end
 
-        it { is_expected.to eq 'Yes' }
-      end
+    context "true value" do
+      let(:value) { true }
 
-      context "false value" do
-        let(:secret) { false }
+      it { is_expected.to eq 'Yes' }
+    end
 
-        it { is_expected.to eq 'No' }
-      end
+    context "false value" do
+      let(:value) { false }
+
+      it { is_expected.to eq 'No' }
     end
   end
 

@@ -5,6 +5,7 @@ require 'active_record'
 require 'database_rewinder'
 require 'i18n'
 require 'stackprof'
+require 'csv'
 
 Bundler.require
 
