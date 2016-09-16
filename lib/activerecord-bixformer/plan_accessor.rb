@@ -12,7 +12,7 @@ module ActiveRecord
       end
 
       def value_of(config_name)
-        @plan.__send__(config_name)
+        @plan.__send__(config_name).dup
       end
 
       def pickup_value_for(model, config_name, default_value = nil)
