@@ -39,6 +39,14 @@ module ActiveRecord
             end
           end
 
+          def csv_title(attribute_name)
+            if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Indexed) }
+              parents.map { |parent| parent.translator.translate_model }.join + super
+            else
+              super
+            end
+          end
+
           private
 
           def update_translator(index)
@@ -47,14 +55,6 @@ module ActiveRecord
             @translator.attribute_arguments_map = @attributes.map do |attr|
               [attr.name, { index: index }]
             end.to_h
-          end
-
-          def csv_title(attribute_name)
-            if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Indexed) }
-              parents.map { |parent| parent.translator.translate_model }.join + super
-            else
-              super
-            end
           end
         end
       end

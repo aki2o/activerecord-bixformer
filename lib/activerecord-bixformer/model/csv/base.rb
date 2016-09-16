@@ -39,12 +39,6 @@ module ActiveRecord
             ]
           end
 
-          def parse_self_data_source(csv_row)
-            csv_row
-          end
-
-          private
-
           def csv_title(attribute_name)
             @translator.translate_attribute(attribute_name)
           end
