@@ -120,10 +120,15 @@ module ActiveRecord
       end
 
       def module_load_namespaces(module_type)
+        module_type_namespace = module_type.to_s.camelize
+
+        plan_namespace = @plan.class.__bixformer_namespace
+        plan_namespace = "#{plan_namespace.camelize}::#{module_type_namespace}" if plan_namespace
+
         [
-          @plan.class.__bixformer_namespace,
-          "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}::#{@plan.__bixformer_format.camelize}",
-          "::ActiveRecord::Bixformer::#{module_type.to_s.camelize}",
+          plan_namespace,
+          "::ActiveRecord::Bixformer::#{module_type_namespace}::#{@plan.__bixformer_format.camelize}",
+          "::ActiveRecord::Bixformer::#{module_type_namespace}",
         ].compact
       end
     end
