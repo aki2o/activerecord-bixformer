@@ -22,7 +22,7 @@ module ActiveRecord
 
         def initialize(model_or_association_name, options)
           @name         = model_or_association_name.to_s
-          @options      = options
+          @options      = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
           @associations = []
         end
 

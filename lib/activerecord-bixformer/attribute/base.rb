@@ -7,7 +7,7 @@ module ActiveRecord
         def initialize(model, attribute_name, options)
           @model   = model
           @name    = attribute_name
-          @options = options
+          @options = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
         end
 
         def export(activerecord_value)

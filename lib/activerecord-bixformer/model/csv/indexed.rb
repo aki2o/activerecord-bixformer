@@ -6,8 +6,6 @@ module ActiveRecord
           def initialize(model_or_association_name, options)
             super
 
-            @options = options.is_a?(::Hash) ? options : {}
-
             @options[:size] ||= 1
           end
 

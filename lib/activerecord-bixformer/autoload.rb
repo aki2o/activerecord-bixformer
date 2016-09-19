@@ -13,6 +13,7 @@ module ActiveRecord
       autoload :Date,       'activerecord-bixformer/attribute/date'
       autoload :Enumerize,  'activerecord-bixformer/attribute/enumerize'
       autoload :Override,   'activerecord-bixformer/attribute/override'
+      autoload :String,     'activerecord-bixformer/attribute/string'
       autoload :Time,       'activerecord-bixformer/attribute/time'
     end
 
