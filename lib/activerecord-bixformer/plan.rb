@@ -7,8 +7,22 @@ module ActiveRecord
         attr_accessor :__bixformer_format
 
         class_attribute :__bixformer_model
-
         class_attribute :__bixformer_namespace
+        class_attribute :__bixformer_entry
+        class_attribute :__bixformer_optional_attributes
+        class_attribute :__bixformer_required_attributes
+        class_attribute :__bixformer_unique_indexes
+        class_attribute :__bixformer_required_condition
+        class_attribute :__bixformer_default_values
+        class_attribute :__bixformer_translation_config
+
+        self.__bixformer_entry               = {}
+        self.__bixformer_optional_attributes = []
+        self.__bixformer_required_attributes = []
+        self.__bixformer_unique_indexes      = []
+        self.__bixformer_required_condition  = {}
+        self.__bixformer_default_values      = {}
+        self.__bixformer_translation_config  = { scope: :bixformer, extend_scopes: [] }
       end
 
       module ClassMethods
@@ -19,37 +33,15 @@ module ActiveRecord
         def bixformer_load_namespace(namespace)
           self.__bixformer_namespace = namespace
         end
-      end
 
-      def entry
-        {}
-      end
-
-      def optional_attributes
-        []
-      end
-
-      def required_attributes
-        []
-      end
-
-      def unique_indexes
-        []
-      end
-
-      def required_condition
-        {}
-      end
-
-      def default_values
-        {}
-      end
-
-      def translation_config
-        {
-          scope: :bixformer,
-          extend_scopes: []
-        }
+        [
+          :entry, :optional_attributes, :required_attributes, :unique_indexes,
+          :required_condition, :default_values, :translation_config
+        ].each do |config_name|
+          define_method "bixformer_#{config_name}" do |v|
+            self.__send__("__bixformer_#{config_name}=", v)
+          end
+        end
       end
     end
   end

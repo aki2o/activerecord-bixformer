@@ -12,14 +12,14 @@ module ActiveRecord
       end
 
       def value_of(config_name)
-        @plan.__send__(config_name).dup
+        compile_config_value(config_name).dup
       end
 
       def pickup_value_for(model, config_name, default_value = nil)
         model_names_without_root = (model.parents.map(&:name) + [model.name]).drop(1)
 
         # 指定された設定の全設定値を取得
-        entire_config_value = @plan.__send__(config_name)
+        entire_config_value = compile_config_value(config_name)
 
         if entire_config_value.is_a?(::Hash)
           # Hashなら、with_indifferent_accessしておく
@@ -97,6 +97,18 @@ module ActiveRecord
       end
 
       private
+
+      def compile_config_value(config_name)
+        v = @plan.class.__send__("__bixformer_#{config_name}")
+
+        if v.is_a?(::Proc)
+          v.call
+        elsif v.is_a?(::Symbol) || v.is_a?(::String)
+          @plan.__send__(v)
+        else
+          v
+        end
+      end
 
       def find_nested_config_value(config, keys)
         return config ? config.dup : nil if keys.empty?
