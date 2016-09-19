@@ -102,7 +102,7 @@ module ActiveRecord
         v = @plan.class.__send__("__bixformer_#{config_name}")
 
         if v.is_a?(::Proc)
-          v.call
+          @plan.instance_exec &v
         elsif v.is_a?(::Symbol) || v.is_a?(::String)
           @plan.__send__(v)
         else

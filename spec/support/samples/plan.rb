@@ -24,5 +24,7 @@ class SampleUserPlan
   bixformer_entry               :entry
   bixformer_optional_attributes "optional_attributes"
   bixformer_unique_indexes      :unique_indexes
-  bixformer_required_condition  :required_condition
+  bixformer_required_condition  -> {
+    @options[:required_condition] || {}
+  }
 end
