@@ -40,7 +40,7 @@ module ActiveRecord
 
         if config_value.is_a?(::Array)
           # Arrayで最後の要素がHashの場合、それは子要素の設定値なので、結果に含めない
-          config_value.pop if config_value.last.is_a?(::Hash)
+          config_value.extract_options!
 
           # Arrayなら、要素は文字列化しておく
           config_value = config_value.map { |v| v.to_s }
