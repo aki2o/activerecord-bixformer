@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Enumerize < ::ActiveRecord::Bixformer::Attribute::Base
-        def make_export_value(activerecord_value)
+        def export(activerecord_value)
           activerecord_value = activerecord_value.to_s
 
           @model.activerecord_constant.__send__(@name).options.find do |text, key|
@@ -10,7 +10,7 @@ module ActiveRecord
           end&.first
         end
 
-        def make_import_value(value)
+        def import(value)
           return nil if value.blank?
 
           @model.activerecord_constant.__send__(@name).options.to_h[value.strip] or

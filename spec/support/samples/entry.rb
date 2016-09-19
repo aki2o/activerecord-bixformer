@@ -3,23 +3,23 @@ class SampleEntry
     def user_all_using_indexed_association
       {
         attributes: {
-          id: :base,
-          account: :base,
+          id: :string,
+          account: :string,
           joined_at: [:time, format: :ymdhms]
         },
         associations: {
           profile: {
             attributes: {
-              name: :base,
-              email: :base,
-              age: :base
+              name: :string,
+              email: :string,
+              age: :string
             }
           },
           posts: {
             type: [:indexed, size: 3],
             attributes: {
-              id: :base,
-              content: :base,
+              id: :string,
+              content: :string,
               status: :enumerize,
               secret: :booletania
             },
@@ -27,7 +27,7 @@ class SampleEntry
               tags: {
                 type: [:indexed, size: 2],
                 attributes: {
-                  name: :base
+                  name: :string
                 }
               }
             }

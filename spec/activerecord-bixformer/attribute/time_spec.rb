@@ -4,8 +4,8 @@ describe ActiveRecord::Bixformer::Attribute::Time do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Time.new(nil, nil, options) }
   let(:options) { nil }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value(value) }
+  describe "#export" do
+    subject { attribute.export(value) }
     let(:value) { Time.new(2016, 9, 1, 15, 31, 21, "+00:00") }
 
     context "no options" do
@@ -25,8 +25,8 @@ describe ActiveRecord::Bixformer::Attribute::Time do
     end
   end
 
-  describe "#make_import_valuemethod" do
-    subject { attribute.make_import_value(value) }
+  describe "#importmethod" do
+    subject { attribute.import(value) }
 
     context "valid value" do
       let(:value) { '2016-09-01 15:31:21 +00:00' }

@@ -17,11 +17,8 @@ module ActiveRecord
       class Base
         include ::ActiveRecord::Bixformer::ImportValueValidatable
 
-        attr_reader :name, :parent,
-                    :attributes, :associations,
-                    :optional_attributes,
-                    :translator,
-                    :options
+        attr_reader :name, :options, :parent, :attributes, :associations,
+                    :optional_attributes, :translator
 
         def initialize(model_or_association_name, options)
           @name         = model_or_association_name.to_s
@@ -87,6 +84,24 @@ module ActiveRecord
 
         def find_activerecord_by!(condition)
           activerecord_constant.find_by!(condition)
+        end
+
+        def export(activerecord_or_activerecords)
+          # has_one でしか使わない想定なので activerecord_or_activerecords は ActiveRecord::Base のはず
+          values = @attributes.map do |attr|
+            value_reader    = attr.options[:reader] || attr.name
+            attribute_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(value_reader)
+
+            [csv_title(attr.name), attr.export(attribute_value)]
+          end.to_h.with_indifferent_access
+
+          @associations.inject(values) do |each_values, association|
+            association_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(association.name)
+
+            association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
+
+            each_values.merge(association.export(association_value))
+          end
         end
 
         private

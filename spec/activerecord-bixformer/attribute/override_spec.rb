@@ -5,8 +5,8 @@ describe ActiveRecord::Bixformer::Attribute::Override do
   let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
   let(:attribute_name) { :status }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value('hoge') }
+  describe "#export" do
+    subject { attribute.export('hoge') }
 
     before do
       expect(model).to receive(:override_export_status).and_return('called override method!')
@@ -15,8 +15,8 @@ describe ActiveRecord::Bixformer::Attribute::Override do
     it { is_expected.to eq 'called override method!' }
   end
 
-  describe "#make_import_value" do
-    subject { attribute.make_import_value('hoge') }
+  describe "#import" do
+    subject { attribute.import('hoge') }
 
     before do
       expect(model).to receive(:override_import_status).and_return('called override method!')

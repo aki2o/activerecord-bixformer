@@ -2,13 +2,13 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Date < ::ActiveRecord::Bixformer::Attribute::Base
-        def make_export_value(activerecord_value)
+        def export(activerecord_value)
           return nil unless activerecord_value
 
           activerecord_value.to_s(option_format)
         end
 
-        def make_import_value(value)
+        def import(value)
           return nil if value.blank?
 
           begin

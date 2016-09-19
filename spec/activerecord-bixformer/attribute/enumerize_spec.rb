@@ -5,8 +5,8 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
   let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
   let(:attribute_name) { :status }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value(value) }
+  describe "#export" do
+    subject { attribute.export(value) }
 
     context "no value" do
       let(:value) { nil }
@@ -27,8 +27,8 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
     end
   end
 
-  describe "#make_import_value" do
-    subject { attribute.make_import_value(value) }
+  describe "#import" do
+    subject { attribute.import(value) }
 
     context "no value" do
       let(:value) { nil }

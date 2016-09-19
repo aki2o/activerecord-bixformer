@@ -3,8 +3,8 @@ require 'spec_helper'
 describe ActiveRecord::Bixformer::Attribute::Boolean do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Boolean.new(nil, nil, options) }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value(value) }
+  describe "#export" do
+    subject { attribute.export(value) }
 
     context "no options" do
       let(:options) { nil }
@@ -55,8 +55,8 @@ describe ActiveRecord::Bixformer::Attribute::Boolean do
     end
   end
 
-  describe "#make_import_value" do
-    subject { attribute.make_import_value(value) }
+  describe "#import" do
+    subject { attribute.import(value) }
     
     context "no options" do
       let(:options) { nil }

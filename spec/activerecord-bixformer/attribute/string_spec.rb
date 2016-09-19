@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe ActiveRecord::Bixformer::Attribute::Base do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Base.new(nil, nil, nil) }
+describe ActiveRecord::Bixformer::Attribute::String do
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::String.new(nil, nil, nil) }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value(value) }
+  describe "#export" do
+    subject { attribute.export(value) }
 
     context "string" do
       let(:value) { "hoge" }
@@ -25,8 +25,8 @@ describe ActiveRecord::Bixformer::Attribute::Base do
     end
   end
 
-  describe "#make_import_value" do
-    subject { attribute.make_import_value(value) }
+  describe "#import" do
+    subject { attribute.import(value) }
     
     context "string" do
       let(:value) { "hoge" }

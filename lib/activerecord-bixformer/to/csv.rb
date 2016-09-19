@@ -12,7 +12,7 @@ module ActiveRecord
 
         def csv_body_row(activerecord)
           model    = compile
-          body_map = model.make_export_value(activerecord)
+          body_map = model.export(activerecord)
 
           model.csv_titles.map { |title| body_map[title] }
         end

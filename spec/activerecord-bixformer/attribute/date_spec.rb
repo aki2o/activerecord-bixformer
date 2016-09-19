@@ -4,8 +4,8 @@ describe ActiveRecord::Bixformer::Attribute::Date do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Date.new(nil, nil, options) }
   let(:options) { nil }
 
-  describe "#make_export_value" do
-    subject { attribute.make_export_value(value) }
+  describe "#export" do
+    subject { attribute.export(value) }
     let(:value) { Date.new(2016, 4, 1) }
 
     context "no options" do
@@ -25,8 +25,8 @@ describe ActiveRecord::Bixformer::Attribute::Date do
     end
   end
 
-  describe "#make_import_valuemethod" do
-    subject { attribute.make_import_value(value) }
+  describe "#importmethod" do
+    subject { attribute.import(value) }
 
     context "valid value" do
       let(:value) { '2016-04-01' }

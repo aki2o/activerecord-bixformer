@@ -7,7 +7,7 @@ module ActiveRecord
         end
 
         def assignable_attributes(csv_row)
-          compile.make_import_value(csv_row)
+          compile.import(csv_row)
         end
       end
     end

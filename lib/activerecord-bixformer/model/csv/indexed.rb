@@ -11,7 +11,7 @@ module ActiveRecord
             @options[:size] ||= 1
           end
 
-          def make_export_value(activerecord_or_activerecords)
+          def export(activerecord_or_activerecords)
             activerecord_or_activerecords ||= []
 
             # has_many でしか使わない想定なので activerecord_or_activerecords は Array のはず
@@ -22,7 +22,7 @@ module ActiveRecord
             end
           end
 
-          def make_import_value(csv_row, parent_activerecord_id = nil)
+          def import(csv_row, parent_activerecord_id = nil)
             # has_many でしか使わない想定なので Array を返却
             (1..options[:size]).map do |index|
               update_translator(index)
