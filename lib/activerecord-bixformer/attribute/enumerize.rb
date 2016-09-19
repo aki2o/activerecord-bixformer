@@ -2,11 +2,11 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Enumerize < ::ActiveRecord::Bixformer::Attribute::Base
-        def make_export_value(active_record_value)
-          active_record_value = active_record_value.to_s
+        def make_export_value(activerecord_value)
+          activerecord_value = activerecord_value.to_s
 
           @model.activerecord_constant.__send__(@name).options.find do |text, key|
-            key == active_record_value
+            key == activerecord_value
           end&.first
         end
 

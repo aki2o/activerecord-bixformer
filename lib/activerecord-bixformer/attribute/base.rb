@@ -10,8 +10,8 @@ module ActiveRecord
           @options = options
         end
 
-        def make_export_value(active_record_value)
-          active_record_value.to_s
+        def make_export_value(activerecord_value)
+          activerecord_value.to_s
         end
 
         def make_import_value(value)
