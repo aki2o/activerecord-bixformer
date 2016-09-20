@@ -2,7 +2,9 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Booletania < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(record_attribute_value)
+        def export(record)
+          record_attribute_value = record_attribute_value(record)
+
           @model.activerecord_constant.__send__("#{@name}_options").find do |text, bool|
             bool == record_attribute_value
           end&.first

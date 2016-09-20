@@ -86,24 +86,6 @@ module ActiveRecord
           activerecord_constant.find_by!(condition)
         end
 
-        def export(record_or_records)
-          # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
-          values = @attributes.map do |attr|
-            value_reader    = attr.options[:reader] || attr.name
-            attribute_value = record_or_records && record_or_records.__send__(value_reader)
-
-            [csv_title(attr.name), attr.export(attribute_value)]
-          end.to_h.with_indifferent_access
-
-          @associations.inject(values) do |each_values, association|
-            association_value = record_or_records && record_or_records.__send__(association.name)
-
-            association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
-
-            each_values.merge(association.export(association_value))
-          end
-        end
-
         private
 
         def make_each_attribute_import_value(parent_record_id = nil, &block)

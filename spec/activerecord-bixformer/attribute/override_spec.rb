@@ -4,9 +4,10 @@ describe ActiveRecord::Bixformer::Attribute::Override do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Override.new(model, attribute_name, nil) }
   let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
   let(:attribute_name) { :status }
+  let(:record) { Post.new("#{attribute_name}" => 'hoge') }
 
   describe "#export" do
-    subject { attribute.export('hoge') }
+    subject { attribute.export(record) }
 
     before do
       expect(model).to receive(:override_export_status).and_return('called override method!')

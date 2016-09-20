@@ -4,9 +4,10 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Enumerize.new(model, attribute_name, nil) }
   let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
   let(:attribute_name) { :status }
+  let(:record) { Post.new("#{attribute_name}" => value) }
 
   describe "#export" do
-    subject { attribute.export(value) }
+    subject { attribute.export(record) }
 
     context "no value" do
       let(:value) { nil }

@@ -1,11 +1,13 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Time do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Time.new(nil, nil, options) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Time.new(nil, attribute_name, options) }
+  let(:attribute_name) { :joined_at }
+  let(:record) { User.new("#{attribute_name}" => value) }
   let(:options) { nil }
 
   describe "#export" do
-    subject { attribute.export(value) }
+    subject { attribute.export(record) }
     let(:value) { Time.new(2016, 9, 1, 15, 31, 21, "+00:00") }
 
     context "no options" do

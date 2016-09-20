@@ -2,7 +2,9 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Time < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(record_attribute_value)
+        def export(record)
+          record_attribute_value = record_attribute_value(record)
+
           return nil unless record_attribute_value
 
           record_attribute_value.to_s(option_format)

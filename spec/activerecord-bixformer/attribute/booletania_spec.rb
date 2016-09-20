@@ -4,9 +4,10 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Booletania.new(model, attribute_name, nil) }
   let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
   let(:attribute_name) { :secret }
+  let(:record) { Post.new("#{attribute_name}" => value) }
 
   describe "#export" do
-    subject { attribute.export(value) }
+    subject { attribute.export(record) }
 
     context "no value" do
       let(:value) { nil }
@@ -14,10 +15,10 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
       it { is_expected.to eq nil }
     end
 
-    context "invalid value" do
+    context "other value" do
       let(:value) { :hoge }
 
-      it { is_expected.to eq nil }
+      it { is_expected.to eq 'Yes' }
     end
 
     context "true value" do

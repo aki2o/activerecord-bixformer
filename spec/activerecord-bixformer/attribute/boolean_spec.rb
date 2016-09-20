@@ -1,10 +1,12 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Boolean do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Boolean.new(nil, nil, options) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Boolean.new(nil, attribute_name, options) }
+  let(:attribute_name) { :secret }
+  let(:record) { Post.new("#{attribute_name}" => value) }
 
-  describe "#export" do
-    subject { attribute.export(value) }
+  describe "}#export" do
+    subject { attribute.export(record) }
 
     context "no options" do
       let(:options) { nil }

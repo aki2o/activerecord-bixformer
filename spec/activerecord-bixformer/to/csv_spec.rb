@@ -29,7 +29,7 @@ describe ActiveRecord::Bixformer::To::Csv do
     context "all" do
       let(:expect_value) do
         [
-          "#{ar.id}","sample-taro",ar.joined_at.to_s(:ymdhms),"Taro Sample","","24","#{ar.posts[0].id}","Hello!","Now on show","No","Foo","Fuga","#{ar.posts[1].id}","","Write in Process","Yes","","","","",nil,nil,"",""
+          "#{ar.id}","sample-taro",ar.joined_at.to_s(:ymdhms),"Taro Sample","","24","#{ar.posts[0].id}","Hello!","Now on show","No","Foo","Fuga","#{ar.posts[1].id}","","Write in Process","Yes",nil,nil,nil,nil,nil,nil,nil,nil
         ]
       end
 

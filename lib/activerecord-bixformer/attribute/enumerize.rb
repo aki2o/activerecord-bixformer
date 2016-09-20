@@ -2,8 +2,8 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Enumerize < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(record_attribute_value)
-          record_attribute_value = record_attribute_value.to_s
+        def export(record)
+          record_attribute_value = record_attribute_value(record).to_s
 
           @model.activerecord_constant.__send__(@name).options.find do |text, key|
             key == record_attribute_value

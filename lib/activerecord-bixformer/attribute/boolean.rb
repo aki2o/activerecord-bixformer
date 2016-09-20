@@ -2,11 +2,11 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Boolean < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(record_attribute_value)
+        def export(record)
           true_value = (@options.is_a?(::Hash) && @options[:true]) || 'true'
           false_value = (@options.is_a?(::Hash) && @options[:false]) || 'false'
 
-          record_attribute_value.present? ? true_value : false_value
+          record_attribute_value(record).present? ? true_value : false_value
         end
 
         def import(value)

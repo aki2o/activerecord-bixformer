@@ -1,10 +1,12 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::String do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::String.new(nil, nil, nil) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::String.new(nil, attribute_name, nil) }
+  let(:attribute_name) { :account }
+  let(:record) { User.new("#{attribute_name}" => value) }
 
   describe "#export" do
-    subject { attribute.export(value) }
+    subject { attribute.export(record) }
 
     context "string" do
       let(:value) { "hoge" }
@@ -21,7 +23,7 @@ describe ActiveRecord::Bixformer::Attribute::String do
     context "boolean" do
       let(:value) { true }
 
-      it { is_expected.to eq "true" }
+      it { is_expected.to eq "t" }
     end
   end
 
