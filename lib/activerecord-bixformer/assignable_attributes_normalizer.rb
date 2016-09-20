@@ -106,12 +106,12 @@ module ActiveRecord
       end
 
       def find_unique_condition
-        unique_indexes = @plan.pickup_value_for(@model, :unique_indexes, [])
+        unique_attributes = @plan.pickup_value_for(@model, :unique_attributes, [])
 
         # ユニーク条件が指定されていないなら終了
-        return nil if unique_indexes.empty?
+        return nil if unique_attributes.empty?
 
-        unique_condition = unique_indexes.map do |key|
+        unique_condition = unique_attributes.map do |key|
           [key, @model_attributes[key]]
         end.to_h
 

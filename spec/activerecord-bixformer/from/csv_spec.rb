@@ -7,13 +7,13 @@ describe ActiveRecord::Bixformer::From::Csv do
     {
       entry: SampleEntry.user_all_using_indexed_association,
       optional_attributes: optional_attributes,
-      unique_indexes: unique_indexes,
+      unique_attributes: unique_attributes,
       required_condition: required_condition
     }
   end
 
   let(:optional_attributes) { [] }
-  let(:unique_indexes) { [] }
+  let(:unique_attributes) { [] }
   let(:required_condition) { {} }
 
   before do
@@ -78,7 +78,7 @@ EOS
       end
 
       let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
-      let(:unique_indexes) { SampleUniqueIndex.user_all_default }
+      let(:unique_attributes) { SampleUniqueAttribute.user_all_default }
 
       let(:expect_value) do
         {

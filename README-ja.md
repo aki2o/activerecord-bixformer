@@ -150,7 +150,7 @@ end
 インポート時に、有効な値でない場合に、インポート自体を行わない属性を定義した配列を返して下さい。  
 データ構成は、 `optional_attributes` と同様です。  
 
-### unique_indexes
+### unique_attributes
 
 インポートは、対象の ActiveRecord モデルの `primary_key` に対応するインポートデータの有無によって、  
 追加か更新かを判定しますが、 `primary_key` の属性がインポートデータに含まれていない場合でも、  
@@ -181,7 +181,7 @@ end
 }
 ```
 
-* `primary_key` や `unique_indexes` が指定されている場合のデータベース検索の条件に追加されます
+* `primary_key` や `unique_attributes` が指定されている場合のデータベース検索の条件に追加されます
 * 関連モデルの場合は、親レコードの foreign_key が代わりに使用されます
 * `primary_key` が指定されているのに、データベース検索に失敗した場合には、 `ActiveRecord::RecordNotFound` 例外が raise されます
 
