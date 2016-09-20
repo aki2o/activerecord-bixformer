@@ -104,7 +104,7 @@ ActiveRecord::Bixformer::Plan::Base を継承して、以下のメソッドを�
 }
 ```
 
-### optional_attributes
+### preferred_skip_attributes
 
 インポート時に、有効な値でない場合に、登録対象としない属性を定義した以下のような配列を返して下さい。  
 
@@ -148,14 +148,14 @@ end
 ### required_attributes
 
 インポート時に、有効な値でない場合に、インポート自体を行わない属性を定義した配列を返して下さい。  
-データ構成は、 `optional_attributes` と同様です。  
+データ構成は、 `preferred_skip_attributes` と同様です。  
 
 ### unique_attributes
 
 インポートは、対象の ActiveRecord モデルの `primary_key` に対応するインポートデータの有無によって、  
 追加か更新かを判定しますが、 `primary_key` の属性がインポートデータに含まれていない場合でも、  
 更新処理を行いたい場合に、対象レコードを特定できる属性を定義した配列を返して下さい。  
-データ構成は、 `optional_attributes` と同様です。  
+データ構成は、 `preferred_skip_attributes` と同様です。  
 
 ```ruby
 [

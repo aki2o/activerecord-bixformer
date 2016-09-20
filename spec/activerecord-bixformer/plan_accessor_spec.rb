@@ -21,7 +21,7 @@ describe ActiveRecord::Bixformer::PlanAccessor do
     let(:plan_options) do
       {
         entry: SampleEntry.user_all_using_indexed_association,
-        optional_attributes: SampleOptionalAttribute.user_all_default
+        preferred_skip_attributes: SamplePreferredSkipAttribute.user_all_default
       }
     end
 
@@ -38,13 +38,13 @@ describe ActiveRecord::Bixformer::PlanAccessor do
         model
       end
 
-      context "optional_attributes" do
-        let(:config_name) { :optional_attributes }
+      context "preferred_skip_attributes" do
+        let(:config_name) { :preferred_skip_attributes }
 
         it do
           is_expected.to eq ["id", "status", "secret", "tags"]
 
-          expect(plan.value_of(:optional_attributes)).to eq SampleOptionalAttribute.user_all_default
+          expect(plan.value_of(:preferred_skip_attributes)).to eq SamplePreferredSkipAttribute.user_all_default
         end
       end
     end

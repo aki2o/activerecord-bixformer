@@ -7,11 +7,11 @@ describe ActiveRecord::Bixformer::Compiler do
   let(:plan_options) do
     {
       entry: SampleEntry.user_all_using_indexed_association,
-      optional_attributes: optional_attributes
+      preferred_skip_attributes: preferred_skip_attributes
     }
   end
 
-  let(:optional_attributes) { [] }
+  let(:preferred_skip_attributes) { [] }
 
   before do
     ENV['TZ'] = 'Asia/Tokyo'

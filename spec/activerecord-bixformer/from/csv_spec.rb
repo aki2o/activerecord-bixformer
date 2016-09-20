@@ -6,13 +6,13 @@ describe ActiveRecord::Bixformer::From::Csv do
   let(:plan_options) do
     {
       entry: SampleEntry.user_all_using_indexed_association,
-      optional_attributes: optional_attributes,
+      preferred_skip_attributes: preferred_skip_attributes,
       unique_attributes: unique_attributes,
       required_condition: required_condition
     }
   end
 
-  let(:optional_attributes) { [] }
+  let(:preferred_skip_attributes) { [] }
   let(:unique_attributes) { [] }
   let(:required_condition) { {} }
 
@@ -31,7 +31,7 @@ EOS
       CSV.parse(csv_data, headers: true).first
     end
 
-    context "no optional_attributes" do
+    context "no preferred_skip_attributes" do
       let(:expect_value) do
         {
           account: "import-taro",
@@ -47,8 +47,8 @@ EOS
       it { is_expected.to eq expect_value }
     end
 
-    context "has optional_attributes" do
-      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+    context "has preferred_skip_attributes" do
+      let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
 
       let(:expect_value) do
         {
@@ -77,7 +77,7 @@ EOS
         CSV.parse(csv_data, headers: true).first
       end
 
-      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+      let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
       let(:unique_attributes) { SampleUniqueAttribute.user_all_default }
 
       let(:expect_value) do
@@ -118,7 +118,7 @@ EOS
     end
 
     context "invalid id child record" do
-      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+      let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
 
       let(:user) { User.find_or_create_by!(account: 'invalid-id-child', joined_at: Time.current) }
       let(:post_id) { user.posts.find_or_create_by!(content: 'Wrong user!', status: :published).id }
@@ -138,7 +138,7 @@ EOS
     end
 
     context "invalid id root record" do
-      let(:optional_attributes) { SampleOptionalAttribute.user_all_default }
+      let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
 
       let(:group) { Group.find_or_create_by!(name: 'New Group') }
       let(:other_group) { Group.find_or_create_by!(name: 'Other Group') }

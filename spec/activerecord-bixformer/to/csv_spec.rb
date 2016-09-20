@@ -6,12 +6,12 @@ describe ActiveRecord::Bixformer::To::Csv do
   let(:plan_options) do
     {
       entry: entry,
-      optional_attributes: optional_attributes
+      preferred_skip_attributes: preferred_skip_attributes
     }
   end
 
   let(:entry) { SampleEntry.user_all_using_indexed_association }
-  let(:optional_attributes) { [] }
+  let(:preferred_skip_attributes) { [] }
 
   describe "#csv_title_row" do
     subject { bixformer.csv_title_row }

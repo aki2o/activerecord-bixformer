@@ -1,4 +1,4 @@
-class SampleOptionalAttribute
+class SamplePreferredSkipAttribute
   class << self
     def user_all_default
       [

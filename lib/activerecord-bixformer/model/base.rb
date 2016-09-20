@@ -7,7 +7,7 @@ module ActiveRecord
       #   the instance has parent association.
       # @attr_reader [Hash<String, ActiveRecord::Bixformer::Attribute::Base>] attributes
       #   the import/export target attribute names and its instance.
-      # @attr_reader [Array<String>] optional_attributes
+      # @attr_reader [Array<String>] preferred_skip_attributes
       #   the list of attribute name to not make key if its value is blank.
       # @attr_reader [Hash<String, ActiveRecord::Bixformer::Model::Base>] associations
       #   the import/export target association names and its instance.
@@ -18,7 +18,7 @@ module ActiveRecord
         include ::ActiveRecord::Bixformer::ImportValueValidatable
 
         attr_reader :name, :options, :parent, :attributes, :associations,
-                    :optional_attributes, :translator
+                    :preferred_skip_attributes, :translator
 
         def initialize(model_or_association_name, options)
           @name         = model_or_association_name.to_s
@@ -37,7 +37,7 @@ module ActiveRecord
             @plan.new_module_instance(:attribute, attribute_type, self, attribute_name, attribute_options)
           end
 
-          @optional_attributes = @plan.pickup_value_for(self, :optional_attributes, [])
+          @preferred_skip_attributes = @plan.pickup_value_for(self, :preferred_skip_attributes, [])
           @default_values      = @plan.pickup_value_for(self, :default_values, {})
 
           # At present, translation function is only i18n
@@ -117,7 +117,7 @@ module ActiveRecord
 
             # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
             next if ! presence_value?(attribute_value) &&
-                    @optional_attributes.include?(attr.name.to_s)
+                    @preferred_skip_attributes.include?(attr.name.to_s)
 
             values[attr.name] = attribute_value
           end
@@ -138,7 +138,7 @@ module ActiveRecord
 
             # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
             next if ! presence_value?(association_value) &&
-                    @optional_attributes.include?(association.name.to_s)
+                    @preferred_skip_attributes.include?(association.name.to_s)
 
             values["#{association.name}_attributes".to_sym] = association_value
           end
