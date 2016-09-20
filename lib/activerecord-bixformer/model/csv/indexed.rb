@@ -20,13 +20,20 @@ module ActiveRecord
             end
           end
 
-          def import(csv_row, parent_record_id = nil)
+          def import(csv_body_row, parent_record_id = nil)
             # has_many でしか使わない想定なので Array を返却
             (1..options[:size]).map do |index|
               update_translator(index)
 
               super
             end
+          end
+
+          def verify_csv_titles(csv_title_row)
+            # size は可変長なので、'1'だけ検証する
+            update_translator(1)
+
+            super
           end
 
           def csv_titles

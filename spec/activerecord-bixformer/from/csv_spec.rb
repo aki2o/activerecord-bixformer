@@ -20,6 +20,43 @@ describe ActiveRecord::Bixformer::From::Csv do
     ENV['TZ'] = 'Asia/Tokyo'
   end
 
+  describe "#verify_csv_titles" do
+    subject { bixformer.verify_csv_titles(csv_row) }
+
+    let(:csv_row) do
+      csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+EOS
+      CSV.parse(csv_data).first
+    end
+
+    context "includes all titles" do
+      it { is_expected.to be_truthy }
+    end
+
+    context "remove first title" do
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp.sub(/^[^,]+,/, '')}
+EOS
+        CSV.parse(csv_data).first
+      end
+
+      it { is_expected.to be_falsy }
+    end
+
+    context "remove last title as indexed" do
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp.sub(/,[^,]+$/, '')}
+EOS
+        CSV.parse(csv_data).first
+      end
+
+      it { is_expected.to be_truthy }
+    end
+  end
+
   describe "#assignable_attributes" do
     subject { bixformer.assignable_attributes(csv_row) }
 
