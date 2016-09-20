@@ -38,7 +38,7 @@ module ActiveRecord
           end
 
           @preferred_skip_attributes = @plan.pickup_value_for(self, :preferred_skip_attributes, [])
-          @default_values      = @plan.pickup_value_for(self, :default_values, {})
+          @default_values            = @plan.pickup_value_for(self, :default_values, {})
 
           # At present, translation function is only i18n
           @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
@@ -95,16 +95,26 @@ module ActiveRecord
           @attributes.each do |attr|
             attribute_value = block.call(attr)
 
-            attribute_value = @default_values[attr.name] unless presence_value?(attribute_value)
-
-            # 取り込み時は、オプショナルな属性では、空と思われる値は取り込まない
+            # 取り込み時は、 preferred_skip な属性では、有効でない値は取り込まない
             next if ! presence_value?(attribute_value) &&
                     @preferred_skip_attributes.include?(attr.name.to_s)
 
             values[attr.name] = attribute_value
           end
 
-          normalizer.normalize(values)
+          # データの検証と正規化
+          normalizer.normalize(values).tap do |normalized_values|
+            # デフォルト値の補完
+            @default_values.each do |attribute_name, default_value|
+              # 結果にキーが存在していない（ preferred_skip_attributes で指定されてる）場合は補完しない
+              next unless normalized_values.key?(attribute_name)
+
+              # 有効な値が既に格納されている場合も補完しない
+              next if presence_value?(normalized_values[attribute_name])
+
+              normalized_values[attribute_name] = default_value
+            end
+          end
         end
 
         def make_each_association_import_value(values, &block)
@@ -118,7 +128,7 @@ module ActiveRecord
               association_value = association_value.reject { |v| ! presence_value?(v) }
             end
 
-            # 取り込み時は、オプショナルな関連では、空と思われる値は取り込まない
+            # 取り込み時は、 preferred_skip な関連では、有効でない値は取り込まない
             next if ! presence_value?(association_value) &&
                     @preferred_skip_attributes.include?(association.name.to_s)
 
