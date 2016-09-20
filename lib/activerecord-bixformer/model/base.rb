@@ -82,21 +82,21 @@ module ActiveRecord
             end
         end
 
-        def find_activerecord_by!(condition)
+        def find_record_by!(condition)
           activerecord_constant.find_by!(condition)
         end
 
-        def export(activerecord_or_activerecords)
-          # has_one でしか使わない想定なので activerecord_or_activerecords は ActiveRecord::Base のはず
+        def export(record_or_records)
+          # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
           values = @attributes.map do |attr|
             value_reader    = attr.options[:reader] || attr.name
-            attribute_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(value_reader)
+            attribute_value = record_or_records && record_or_records.__send__(value_reader)
 
             [csv_title(attr.name), attr.export(attribute_value)]
           end.to_h.with_indifferent_access
 
           @associations.inject(values) do |each_values, association|
-            association_value = activerecord_or_activerecords && activerecord_or_activerecords.__send__(association.name)
+            association_value = record_or_records && record_or_records.__send__(association.name)
 
             association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
 
@@ -106,9 +106,9 @@ module ActiveRecord
 
         private
 
-        def make_each_attribute_import_value(parent_activerecord_id = nil, &block)
+        def make_each_attribute_import_value(parent_record_id = nil, &block)
           values     = {}.with_indifferent_access
-          normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_activerecord_id)
+          normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_record_id)
 
           @attributes.each do |attr|
             attribute_value = block.call(attr)
@@ -126,10 +126,10 @@ module ActiveRecord
         end
 
         def make_each_association_import_value(values, &block)
-          self_activerecord_id = values[activerecord_constant.primary_key]
+          self_record_id = values[activerecord_constant.primary_key]
 
           @associations.each do |association|
-            association_value = block.call(association, self_activerecord_id)
+            association_value = block.call(association, self_record_id)
 
             if association_value.is_a?(::Array)
               # has_many な場合は、配列が返ってくるが、空と思われる要素は結果に含めない

@@ -2,10 +2,10 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Date < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(activerecord_value)
-          return nil unless activerecord_value
+        def export(record_attribute_value)
+          return nil unless record_attribute_value
 
-          activerecord_value.to_s(option_format)
+          record_attribute_value.to_s(option_format)
         end
 
         def import(value)

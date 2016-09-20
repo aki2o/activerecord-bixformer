@@ -9,18 +9,18 @@ module ActiveRecord
             @options[:size] ||= 1
           end
 
-          def export(activerecord_or_activerecords)
-            activerecord_or_activerecords ||= []
+          def export(record_or_records)
+            record_or_records ||= []
 
-            # has_many でしか使わない想定なので activerecord_or_activerecords は Array のはず
+            # has_many でしか使わない想定なので record_or_records は Array のはず
             (1..options[:size]).inject({}) do |values, index|
               update_translator(index)
 
-              values.merge(super(activerecord_or_activerecords[index-1]))
+              values.merge(super(record_or_records[index-1]))
             end
           end
 
-          def import(csv_row, parent_activerecord_id = nil)
+          def import(csv_row, parent_record_id = nil)
             # has_many でしか使わない想定なので Array を返却
             (1..options[:size]).map do |index|
               update_translator(index)

@@ -3,10 +3,10 @@ module ActiveRecord
     class AssignableAttributesNormalizer
       include ::ActiveRecord::Bixformer::ImportValueValidatable
 
-      def initialize(plan, model, parent_activerecord_id)
+      def initialize(plan, model, parent_record_id)
         @plan                   = ActiveRecord::Bixformer::PlanAccessor.new(plan)
         @model                  = model
-        @parent_activerecord_id = parent_activerecord_id
+        @parent_record_id = parent_record_id
         @identified_column_name = @model.activerecord_constant.primary_key
       end
 
@@ -47,9 +47,9 @@ module ActiveRecord
         # 設定するのは親がいる場合のみ
         return unless @model.parent
 
-        if @parent_activerecord_id
+        if @parent_record_id
           # 親のレコードが見つかっているなら、それも結果ハッシュに追加する
-          @model_attributes[@model.parent_foreign_key] = @parent_activerecord_id
+          @model_attributes[@model.parent_foreign_key] = @parent_record_id
         else
           # 見つかっていないなら、間違った値が指定されている可能性があるので、キー自体を削除
           @model_attributes.delete(@model.parent_foreign_key)
@@ -58,7 +58,7 @@ module ActiveRecord
 
       def set_identified_attribute
         # 更新の場合は、インポートデータを元にデータベースから対象のレコードを検索してIDを取得
-        verified_id = verified_activerecord_id
+        verified_id = verified_record_id
 
         if verified_id
           # 更新なら、ID属性を改めて設定
@@ -69,7 +69,7 @@ module ActiveRecord
         end
       end
 
-      def verified_activerecord_id
+      def verified_record_id
         # 更新対象のレコードを特定できるかチェック
         identified_value = @model_attributes[@identified_column_name]
 
@@ -99,7 +99,7 @@ module ActiveRecord
         # 検証条件とマージして、データベースに登録されているか確認する
         verified_condition = uniqueness_condition.merge(required_condition)
 
-        @model.find_activerecord_by!(verified_condition).__send__(@identified_column_name)
+        @model.find_record_by!(verified_condition).__send__(@identified_column_name)
       rescue ::ActiveRecord::RecordNotFound => e
         # ID属性が指定されているのに、データベースに見つからない場合はエラーにする
         raise e if identified_value

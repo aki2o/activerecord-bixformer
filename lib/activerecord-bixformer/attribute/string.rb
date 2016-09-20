@@ -2,8 +2,8 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class String < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(activerecord_value)
-          activerecord_value.to_s
+        def export(record_attribute_value)
+          record_attribute_value.to_s
         end
 
         def import(value)

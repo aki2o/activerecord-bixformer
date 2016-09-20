@@ -10,8 +10,8 @@ module ActiveRecord
           @options = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
         end
 
-        def export(activerecord_value)
-          activerecord_value
+        def export(record_attribute_value)
+          record_attribute_value
         end
 
         def import(value)

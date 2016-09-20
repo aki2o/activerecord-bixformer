@@ -3,15 +3,15 @@ module ActiveRecord
     module Model
       module Csv
         class Base < ::ActiveRecord::Bixformer::Model::Base
-          def import(csv_row, parent_activerecord_id = nil)
-            values = make_each_attribute_import_value(parent_activerecord_id) do |attr|
+          def import(csv_row, parent_record_id = nil)
+            values = make_each_attribute_import_value(parent_record_id) do |attr|
               csv_value = csv_row[csv_title(attr.name)]
 
               attr.import(csv_value)
             end
 
-            make_each_association_import_value(values) do |association, self_activerecord_id|
-              association.import(csv_row, self_activerecord_id)
+            make_each_association_import_value(values) do |association, self_record_id|
+              association.import(csv_row, self_record_id)
             end
           end
 

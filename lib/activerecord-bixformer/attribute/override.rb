@@ -2,8 +2,8 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class Override < ::ActiveRecord::Bixformer::Attribute::Base
-        def export(activerecord_value)
-          @model.__send__("override_export_#{@name}", activerecord_value)
+        def export(record_attribute_value)
+          @model.__send__("override_export_#{@name}", record_attribute_value)
         end
 
         def import(value)
