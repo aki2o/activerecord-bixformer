@@ -11,6 +11,10 @@ module ActiveRecord
         @plan
       end
 
+      def for
+        @plan.class.__bixformer_model
+      end
+
       def value_of(config_name)
         compile_config_value(config_name).dup
       end
