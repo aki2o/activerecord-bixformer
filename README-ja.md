@@ -5,7 +5,7 @@
 以下のような特徴があります。  
 
 * `accepts_nested_attributes_for` で定義された関連モデルを同時に扱える
-* インポートデータに `primary_key` が含まれる場合、それが正当な値かどうかをチェックできる
+* インポート時、インポートデータが正当な値かどうかをチェックする
 * 設定用クラスを定義して使い、モデル、属性単位で処理をカスタマイズ可能
 
 現在のところ、インポート/エクスポート可能なデータ形式は
@@ -124,7 +124,9 @@ class SamplePlan
   #   - 配列を返すProcオブジェクトかメソッド名/シンボルで指定
   #   - 有効な値については、「インポート時に有効な値」を参照
   #
-  bixformer_preferred_skip_attributes -> do
+  bixformer_preferred_skip_attributes :skippable_attributes
+
+  def skippable_attributes
     [
       # ルートの要素は、対象モデル（上の例なら user ）への指定
       # bixformer_entry で定義されている属性で指定
@@ -242,7 +244,7 @@ class SamplePlan
       scope: :bixformer,
       
       # translation を検索するスコープを、基点のスコープ配下に増やしたい場合に指定
-      extend_scopes: [:version1, :version2]
+      extend_scopes: [:version2, :version1]
       
       # 上記の場合、ユーザが投稿したタイトルは
       #
@@ -317,7 +319,9 @@ end
 
 ### 本フレームワークに定義されたModel一覧
 
-#### For CSV
+Model は各データ形式毎に異なる処理が必要になるため、データ形式毎に使えるクラスが異なります。  
+
+#### CSV
 
 * base
     * has_one な関連モデル用。 has_many な関連モデルには使えない
@@ -328,6 +332,8 @@ end
     * モデルの translation は `ユーザ%{index}の` のように指定（関連モデルがさらに indexed だった場合に使われます）
 
 ### 本フレームワークに定義されたAttribute一覧
+
+Attribute は、基本的にデータ形式に依らず、使用可能な想定をしています。  
 
 * string
     * エクスポートでは `to_s` し、インポートでは `strip` して `presence` する
@@ -349,7 +355,7 @@ end
 * override
     * モデルに処理を委譲する
     * モデルに `override_import_属性名` / `override_export_属性名` を定義すること
-    * インポートでは、インポートデータ、エクスポートでは、 ActiveRecord の属性値が引数となる
+    * インポートでは、インポートデータ、エクスポートでは、 ActiveRecord のインスタンスが引数となる
     * インポート/エクスポートする値を返すこと
 
 ### インポート時に有効な値
