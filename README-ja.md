@@ -248,9 +248,9 @@ class SamplePlan
       
       # 上記の場合、ユーザが投稿したタイトルは
       #
-      # bixformer.version2.user/posts.title
-      # bixformer.version1.user/posts.title
-      # bixformer.user/posts.title
+      # bixformer.version2.attributes.user/posts.title
+      # bixformer.version1.attributes.user/posts.title
+      # bixformer.attributes.user/posts.title
       #
       # の順で検索され、最初に見つかった translation を実行します
       
