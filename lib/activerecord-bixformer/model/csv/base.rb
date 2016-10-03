@@ -4,19 +4,29 @@ module ActiveRecord
       module Csv
         class Base < ::ActiveRecord::Bixformer::Model::Base
           def export(record_or_records)
-            # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
-            values = @attributes.map do |attr|
-              attribute_value = record_or_records && attr.export(record_or_records)
+            run_callback :export do
+              # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
+              values = @attributes.map do |attr|
+                attribute_value = if record_or_records
+                                    run_callback :export, on: attr.name do
+                                      attr.export(record_or_records)
+                                    end
+                                  end
 
-              [csv_title(attr.name), attribute_value]
-            end.to_h.with_indifferent_access
+                [csv_title(attr.name), attribute_value]
+              end.to_h.with_indifferent_access
 
-            @associations.inject(values) do |each_values, association|
-              association_value = record_or_records && record_or_records.__send__(association.name)
+              @associations.inject(values) do |each_values, association|
+                association_value = if record_or_records
+                                      run_callback :export, on: associations.name do
+                                        record_or_records.__send__(association.name)
+                                      end
+                                    end
 
-              association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
+                association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
 
-              each_values.merge(association.export(association_value))
+                each_values.merge(association.export(association_value))
+              end
             end
           end
 
