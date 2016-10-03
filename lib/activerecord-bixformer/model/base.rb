@@ -12,10 +12,9 @@ module ActiveRecord
       # @attr_reader [Hash<String, ActiveRecord::Bixformer::Model::Base>] associations
       #   the import/export target association names and its instance.
       # @attr_reader [ActiveRecord::Bixformer::Translator::I18n] translator
-      # @attr_reader [ActiveRecord::Bixformer::Plan::Base] plan
-      #   active plan in the import/export process.
       class Base
         include ::ActiveRecord::Bixformer::ImportValueValidatable
+        include ::ActiveRecord::Bixformer::ModelCallback
 
         attr_reader :name, :options, :parent, :attributes, :associations,
                     :preferred_skip_attributes, :translator
@@ -92,14 +91,18 @@ module ActiveRecord
           values     = {}.with_indifferent_access
           normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_record_id)
 
-          @attributes.each do |attr|
-            attribute_value = block.call(attr)
+          run_callback :import, type: :attribute do
+            @attributes.each do |attr|
+              attribute_value = run_callback :import, on: attr.name do
+                block.call(attr)
+              end
 
-            # 取り込み時は、 preferred_skip な属性では、有効でない値は取り込まない
-            next if ! presence_value?(attribute_value) &&
-                    @preferred_skip_attributes.include?(attr.name.to_s)
+              # 取り込み時は、 preferred_skip な属性では、有効でない値は取り込まない
+              next if ! presence_value?(attribute_value) &&
+                      @preferred_skip_attributes.include?(attr.name.to_s)
 
-            values[attr.name] = attribute_value
+              values[attr.name] = attribute_value
+            end
           end
 
           # データの検証と正規化
@@ -120,19 +123,23 @@ module ActiveRecord
         def make_each_association_import_value(values, &block)
           self_record_id = values[activerecord_constant.primary_key]
 
-          @associations.each do |association|
-            association_value = block.call(association, self_record_id)
+          run_callback :import, type: :association do
+            @associations.each do |association|
+              association_value = run_callback :import, on: association.name do
+                block.call(association, self_record_id)
+              end
 
-            if association_value.is_a?(::Array)
-              # has_many な場合は、配列が返ってくるが、空と思われる要素は結果に含めない
-              association_value = association_value.reject { |v| ! presence_value?(v) }
+              if association_value.is_a?(::Array)
+                # has_many な場合は、配列が返ってくるが、空と思われる要素は結果に含めない
+                association_value = association_value.reject { |v| ! presence_value?(v) }
+              end
+
+              # 取り込み時は、 preferred_skip な関連では、有効でない値は取り込まない
+              next if ! presence_value?(association_value) &&
+                      @preferred_skip_attributes.include?(association.name.to_s)
+
+              values["#{association.name}_attributes".to_sym] = association_value
             end
-
-            # 取り込み時は、 preferred_skip な関連では、有効でない値は取り込まない
-            next if ! presence_value?(association_value) &&
-                    @preferred_skip_attributes.include?(association.name.to_s)
-
-            values["#{association.name}_attributes".to_sym] = association_value
           end
 
           values

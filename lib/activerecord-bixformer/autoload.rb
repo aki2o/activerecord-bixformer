@@ -5,6 +5,7 @@ module ActiveRecord
     autoload :ImportValueValidatable,         'activerecord-bixformer/import_value_validatable'
     autoload :Plan,                           'activerecord-bixformer/plan'
     autoload :PlanAccessor,                   'activerecord-bixformer/plan_accessor'
+    autoload :ModelCallback,                  'activerecord-bixformer/model_callback'
 
     module Attribute
       autoload :Base,       'activerecord-bixformer/attribute/base'
