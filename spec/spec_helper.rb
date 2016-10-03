@@ -11,6 +11,7 @@ Bundler.require
 
 require "#{File.dirname(__FILE__)}/support/setup_database.rb"
 require "#{File.dirname(__FILE__)}/support/model.rb"
+Dir["#{File.dirname(__FILE__)}/support/models/**/*.rb"].each { |f| require f }
 Dir["#{File.dirname(__FILE__)}/support/samples/*.rb"].each { |f| require f }
 
 RSpec.configure do |config|
