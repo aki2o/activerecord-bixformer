@@ -4,90 +4,14 @@ module ActiveRecord::Bixformer::Model::Spec
 end
 
 module CallbackLogging
-  extend ActiveSupport::Concern
+  def initialize(model_or_association_name, options)
+    super
 
-  included do
-    attr_reader :callback_logs
-
-    def initialize(model_or_association_name, options)
-      super
-
-      @callback_logs = []
-    end
+    @callback_logs = []
   end
-end
 
-module CallbackExport
-  extend ActiveSupport::Concern
-
-  include CallbackLogging
-
-  included do
-    bixformer_before_export do
-      @callback_logs << "Before export!"
-    end
-
-    bixformer_after_export :logging_after_export
-
-    def logging_after_export(result)
-      @callback_logs << "After export!"
-    end
-
-    bixformer_before_export :logging_before_association_export, type: :association
-
-    def logging_before_association_export
-      @callback_logs << "Before export association!"
-    end
-
-    bixformer_after_export on: :account do |result|
-      @callback_logs << "After export account : #{result}!"
-    end
-
-    bixformer_around_export on: :account do |body|
-      result = body.call
-
-      @callback_logs << "Around export account : #{result}!"
-
-      "hoge"
-    end
-  end
-end
-
-module CallbackImport
-  extend ActiveSupport::Concern
-
-  include CallbackLogging
-
-  included do
-    bixformer_before_import do
-      @callback_logs << "Before import!"
-    end
-
-    bixformer_after_import :logging_after_import
-
-    def logging_after_import(result)
-      @callback_logs << "After import!"
-    end
-
-    bixformer_before_import type: :association do
-      @callback_logs << "Before import association!"
-    end
-
-    bixformer_after_import :logging_after_account_import, on: :account
-
-    def logging_after_account_import(result)
-      @callback_logs << "After import account : #{result}!"
-    end
-
-    bixformer_around_import :logging_around_account_import, on: :account
-
-    def logging_around_account_import
-      result = yield
-
-      @callback_logs << "Around import account : #{result}!"
-
-      "hoge"
-    end
+  def callback_logs
+    @callback_logs
   end
 end
 
@@ -115,13 +39,46 @@ shared_examples_for "ActiveRecord::Bixformer::ModelCallback" do |export_user, im
 
     eval <<-EOS
 class ActiveRecord::Bixformer::Model::Spec::#{klass} < ActiveRecord::Bixformer::Model::#{format}::#{klass}
-  include #{callback_module}
+#{callback_source}
 end
 EOS
   end
 
   context "export patern" do
-    let(:callback_module) { CallbackExport }
+    let(:callback_source) do
+<<-'EOS'
+  include CallbackLogging
+
+  bixformer_before_export do
+    @callback_logs << "Before export!"
+  end
+
+  bixformer_after_export :logging_after_export
+
+  def logging_after_export(result)
+    @callback_logs << "After export!"
+  end
+
+  bixformer_before_export :logging_before_association_export, type: :association
+
+  def logging_before_association_export
+    @callback_logs << "Before export association!"
+  end
+
+  bixformer_after_export on: :account do |result|
+    @callback_logs << "After export account : #{result}!"
+  end
+
+  bixformer_around_export on: :account do |body|
+    result = body.call
+
+    @callback_logs << "Around export account : #{result}!"
+
+    "hoge"
+  end
+EOS
+    end
+
     let(:expect_value) do
       [
         "Before export!",
@@ -138,7 +95,42 @@ EOS
   end
 
   context "import patern" do
-    let(:callback_module) { CallbackImport }
+    let(:callback_source) do
+<<-'EOS'
+  include CallbackLogging
+
+  bixformer_before_import do
+    @callback_logs << "Before import!"
+  end
+
+  bixformer_after_import :logging_after_import
+
+  def logging_after_import(result)
+    @callback_logs << "After import!"
+  end
+
+  bixformer_before_import type: :association do
+    @callback_logs << "Before import association!"
+  end
+
+  bixformer_after_import :logging_after_account_import, on: :account
+
+  def logging_after_account_import(result)
+    @callback_logs << "After import account : #{result}!"
+  end
+
+  bixformer_around_import :logging_around_account_import, on: :account
+
+  def logging_around_account_import
+    result = yield
+
+    @callback_logs << "Around import account : #{result}!"
+
+    "hoge"
+  end
+EOS
+    end
+
     let(:expect_value) do
       [
         "Before import!",

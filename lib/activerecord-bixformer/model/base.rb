@@ -91,9 +91,9 @@ module ActiveRecord
           values     = {}.with_indifferent_access
           normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_record_id)
 
-          run_callback :import, type: :attribute do
+          run_bixformer_callback :import, type: :attribute do
             @attributes.each do |attr|
-              attribute_value = run_callback :import, on: attr.name do
+              attribute_value = run_bixformer_callback :import, on: attr.name do
                 block.call(attr)
               end
 
@@ -123,9 +123,9 @@ module ActiveRecord
         def make_each_association_import_value(values, &block)
           self_record_id = values[activerecord_constant.primary_key]
 
-          run_callback :import, type: :association do
+          run_bixformer_callback :import, type: :association do
             @associations.each do |association|
-              association_value = run_callback :import, on: association.name do
+              association_value = run_bixformer_callback :import, on: association.name do
                 block.call(association, self_record_id)
               end
 

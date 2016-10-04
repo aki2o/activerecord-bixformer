@@ -4,12 +4,12 @@ module ActiveRecord
       module Csv
         class Base < ::ActiveRecord::Bixformer::Model::Base
           def export(record_or_records)
-            run_callback :export do
-              values = run_callback :export, type: :attribute do
+            run_bixformer_callback :export do
+              values = run_bixformer_callback :export, type: :attribute do
                 # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
                 @attributes.map do |attr|
                   attribute_value = if record_or_records
-                                      run_callback :export, on: attr.name do
+                                      run_bixformer_callback :export, on: attr.name do
                                         attr.export(record_or_records)
                                       end
                                     end
@@ -18,10 +18,10 @@ module ActiveRecord
                 end.to_h.with_indifferent_access
               end
 
-              run_callback :export, type: :association do
+              run_bixformer_callback :export, type: :association do
                 @associations.inject(values) do |each_values, association|
                   association_value = if record_or_records
-                                        run_callback :export, on: association.name do
+                                        run_bixformer_callback :export, on: association.name do
                                           record_or_records.__send__(association.name)
                                         end
                                       end
@@ -35,7 +35,7 @@ module ActiveRecord
           end
 
           def import(csv_body_row, parent_record_id = nil)
-            run_callback :import do
+            run_bixformer_callback :import do
               values = make_each_attribute_import_value(parent_record_id) do |attr|
                 csv_value = csv_body_row[csv_title(attr.name)]
 
