@@ -19,7 +19,7 @@ module ActiveRecord
       end
 
       def should_be_included
-        compile_model.should_be_included
+        compile.should_be_included
       end
 
       private
