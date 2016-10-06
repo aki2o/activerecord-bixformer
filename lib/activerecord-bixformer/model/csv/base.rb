@@ -3,14 +3,14 @@ module ActiveRecord
     module Model
       module Csv
         class Base < ::ActiveRecord::Bixformer::Model::Base
-          def export(record_or_records)
+          def export(record_or_relation)
             run_bixformer_callback :export do
               values = run_bixformer_callback :export, type: :attribute do
-                # has_one でしか使わない想定なので record_or_records は ActiveRecord::Base のはず
+                # has_one でしか使わない想定なので record_or_relation は ActiveRecord::Base のはず
                 @attributes.map do |attr|
-                  attribute_value = if record_or_records
+                  attribute_value = if record_or_relation
                                       run_bixformer_callback :export, on: attr.name do
-                                        attr.export(record_or_records)
+                                        attr.export(record_or_relation)
                                       end
                                     end
 
@@ -20,13 +20,11 @@ module ActiveRecord
 
               run_bixformer_callback :export, type: :association do
                 @associations.inject(values) do |each_values, association|
-                  association_value = if record_or_records
+                  association_value = if record_or_relation
                                         run_bixformer_callback :export, on: association.name do
-                                          record_or_records.__send__(association.name)
+                                          record_or_relation.__send__(association.name)
                                         end
                                       end
-
-                  association_value = association_value.to_a if association_value.is_a?(::ActiveRecord::Relation)
 
                   each_values.merge(association.export(association_value))
                 end

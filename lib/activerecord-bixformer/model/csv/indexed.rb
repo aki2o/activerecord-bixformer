@@ -9,19 +9,19 @@ module ActiveRecord
             @options[:size] ||= 1
           end
 
-          def export(record_or_records)
-            record_or_records ||= []
+          def export(record_or_relation)
+            record_or_relation ||= []
 
-            # has_many でしか使わない想定なので record_or_records は Array のはず
+            # has_many でしか使わない想定なので record_or_relation は ActiveRecord::Relation のはず
             (1..options[:size]).inject({}) do |values, index|
               update_translator(index)
 
-              values.merge(super(record_or_records[index-1]))
+              values.merge(super(record_or_relation[index-1]))
             end
           end
 
           def import(csv_body_row, parent_record_id = nil)
-            # has_many でしか使わない想定なので Array を返却
+            # has_many でしか使わない想定なので ActiveRecord::Relation を返却
             (1..options[:size]).map do |index|
               update_translator(index)
 
