@@ -18,6 +18,10 @@ module ActiveRecord
         model
       end
 
+      def should_be_included
+        compile_model.should_be_included
+      end
+
       private
 
       def compile_model(model)
