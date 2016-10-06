@@ -81,6 +81,31 @@ module ActiveRecord
             end
         end
 
+        def should_be_included
+          arr  = []
+          hash = {}
+
+          @associations.each do |assoc|
+            assoc_should_be_included = assoc.should_be_included
+
+            if assoc_should_be_included.empty?
+              arr.push assoc.name.to_sym
+            else
+              hash[assoc.name.to_sym] = assoc_should_be_included
+            end
+          end
+
+          if hash.empty? && arr.empty?
+            []
+          elsif hash.empty?
+            arr
+          elsif arr.empty?
+            hash
+          else
+            [*arr, hash]
+          end
+        end
+
         def find_record_by!(condition)
           activerecord_constant.find_by!(condition)
         end
