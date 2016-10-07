@@ -5,8 +5,9 @@ class CreateAllTables < ActiveRecord::Migration
   def self.up
     create_table :groups do |t|
       t.string :name, null: false
+      t.string :kind
     end
-    add_index :groups, :name, unique: true
+    add_index :groups, [:name, :kind], unique: true
 
     create_table :users do |t|
       t.integer :group_id

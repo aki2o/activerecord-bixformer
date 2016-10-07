@@ -5,7 +5,9 @@ require 'booletania'
 class Group < ActiveRecord::Base
   has_many :users
 
-  validates :name, presence: true, uniqueness: true
+  validates :name, presence: true, uniqueness: { scope: [:kind] }, format: /\A[a-zA-Z0-9_]+\z/
+
+  scope :admins, -> { where(kind: 'admin') }
 end
 
 class User < ActiveRecord::Base

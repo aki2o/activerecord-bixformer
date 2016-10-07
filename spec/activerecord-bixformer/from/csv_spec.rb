@@ -177,8 +177,8 @@ EOS
     context "invalid id root record" do
       let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
 
-      let(:group) { Group.find_or_create_by!(name: 'New Group') }
-      let(:other_group) { Group.find_or_create_by!(name: 'Other Group') }
+      let(:group) { Group.find_or_create_by!(name: 'NewGroup') }
+      let(:other_group) { Group.find_or_create_by!(name: 'OtherGroup') }
       let(:account) { 'invalid-id-root' }
       let(:joined_at) { Time.new(2016, 9, 1, 15, 31, 21, "+09:00") }
 

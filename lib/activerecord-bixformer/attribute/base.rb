@@ -6,7 +6,7 @@ module ActiveRecord
 
         def initialize(model, attribute_name, options)
           @model   = model
-          @name    = attribute_name
+          @name    = attribute_name.to_s
           @options = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
         end
 
