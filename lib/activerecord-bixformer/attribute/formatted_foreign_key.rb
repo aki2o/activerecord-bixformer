@@ -65,7 +65,11 @@ module ActiveRecord
                                foreign_constant.__send__(scope).build(condition)
                              end
 
-            foreign_record.__send__(creator)
+            if creator.is_a?(::Proc)
+              creator.call(foreign_record)
+            else
+              foreign_record.__send__(creator)
+            end
           end
 
           foreign_record&.__send__(foreign_constant.primary_key)
