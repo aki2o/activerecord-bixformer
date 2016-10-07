@@ -132,8 +132,8 @@ module ActiveRecord
 
           # データの検証と正規化
           normalizer.normalize(values).tap do |normalized_values|
-            # 結果ハッシュに有効な値がない（空と思われる）場合は補完しない
-            if presence_value?(normalized_values)
+            # 結果ハッシュに何かキーがある場合だけ
+            if normalized_values.present?
               # デフォルト値の補完
               @default_values.each do |attribute_name, default_value|
                 # 有効な値が既に格納されている場合は補完しない
