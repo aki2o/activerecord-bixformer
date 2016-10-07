@@ -132,15 +132,22 @@ module ActiveRecord
 
           # データの検証と正規化
           normalizer.normalize(values).tap do |normalized_values|
-            # デフォルト値の補完
-            @default_values.each do |attribute_name, default_value|
-              # 結果にキーが存在していない（ preferred_skip_attributes で指定されてる）場合は補完しない
-              next unless normalized_values.key?(attribute_name)
+            # 結果ハッシュに有効な値がない（空と思われる）場合は補完しない
+            if presence_value?(normalized_values)
+              # デフォルト値の補完
+              @default_values.each do |attribute_name, default_value|
+                # 有効な値が既に格納されている場合は補完しない
+                next if presence_value?(normalized_values[attribute_name])
 
-              # 有効な値が既に格納されている場合も補完しない
-              next if presence_value?(normalized_values[attribute_name])
+                # preferred_skip_attributes で指定されてる場合は補完しない
+                next if @preferred_skip_attributes.include?(attribute_name)
 
-              normalized_values[attribute_name] = default_value
+                normalized_values[attribute_name] = if default_value.is_a?(::Proc)
+                                                      default_value.call
+                                                    else
+                                                      default_value
+                                                    end
+              end
             end
           end
         end
