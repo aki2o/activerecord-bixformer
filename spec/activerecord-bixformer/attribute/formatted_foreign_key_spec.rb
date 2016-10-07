@@ -121,6 +121,14 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
         it { expect{subject}.to raise_error(ActiveRecord::RecordInvalid) }
       end
+
+      context "has create option with creator as proc" do
+        let(:options) { { by: :name, create: true, creator: -> (r) { r.name = @model.name; r.save! } } }
+
+        it "has constext of the attribute instance" do
+          is_expected.to eq Group.find_by(name: 'user').id
+        end
+      end
     end
   end
 end
