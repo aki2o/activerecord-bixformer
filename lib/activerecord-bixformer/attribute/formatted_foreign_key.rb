@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class FormattedForeignKey < ::ActiveRecord::Bixformer::Attribute::Base
-        def initialize(_model, _attribute_name, _options)
+        def initialize(model, attribute_name, options)
           super
 
           unless @options[:by]
