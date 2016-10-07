@@ -50,6 +50,8 @@ module ActiveRecord
                         { find_by => value }
                       end
 
+          return nil unless condition
+
           foreign_record = if scope.is_a?(::Proc)
                              self.instance_exec(&scope).__send__(finder, condition)
                            else
