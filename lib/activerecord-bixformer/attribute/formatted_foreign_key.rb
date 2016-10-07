@@ -2,7 +2,7 @@ module ActiveRecord
   module Bixformer
     module Attribute
       class FormattedForeignKey < ::ActiveRecord::Bixformer::Attribute::Base
-        def initialize(model, attribute_name, options)
+        def initialize(_model, _attribute_name, _options)
           super
 
           unless @options[:by]
@@ -30,7 +30,7 @@ module ActiveRecord
           formatter = @options[:by]
 
           if formatter.is_a?(::Proc)
-            self.instance_exec foreign_record, &formatter
+            formatter.call(foreign_record)
           else
             foreign_record.__send__(formatter)
           end
@@ -39,13 +39,13 @@ module ActiveRecord
         def import(value)
           return nil unless value.present?
 
-          find_by = @options[:find_by]
-          scope   = @options[:scope] || :all
-          finder  = @options[:finder] || :find_by
-          creator = @options[:creator] || :save
+          find_by   = @options[:find_by]
+          scope     = @options[:scope] || :all
+          finder    = @options[:finder] || :find_by
+          creator   = @options[:creator] || :save
 
           condition = if find_by.is_a?(::Proc)
-                        self.instance_exec value, &find_by
+                        find_by.call(value)
                       else
                         { find_by => value }
                       end
@@ -53,23 +53,19 @@ module ActiveRecord
           return nil unless condition
 
           foreign_record = if scope.is_a?(::Proc)
-                             self.instance_exec(&scope).__send__(finder, condition)
+                             scope.call.__send__(finder, condition)
                            else
                              foreign_constant.__send__(scope).__send__(finder, condition)
                            end
 
           if ! foreign_record && @options[:create]
             foreign_record = if scope.is_a?(::Proc)
-                               self.instance_exec(&scope).build(condition)
+                               scope.call.build(condition)
                              else
                                foreign_constant.__send__(scope).build(condition)
                              end
 
-            if creator.is_a?(::Proc)
-              self.instance_exec foreign_record, &creator
-            else
-              foreign_record.__send__(creator)
-            end
+            foreign_record.__send__(creator)
           end
 
           foreign_record&.__send__(foreign_constant.primary_key)
