@@ -8,14 +8,20 @@ module ActiveRecord
         @plan       = ActiveRecord::Bixformer::PlanAccessor.new(plan)
       end
 
+      def clear
+        @model = nil
+      end
+
       def compile
-        model_type, model_options = @plan.parse_to_type_and_options(@plan.value_of(:entry)[:type])
+        @model ||= -> do
+          model_type, model_options = @plan.parse_to_type_and_options(@plan.value_of(:entry)[:type])
 
-        model = @plan.new_module_instance(:model, model_type, @model_name, model_options)
+          model = @plan.new_module_instance(:model, model_type, @model_name, model_options)
 
-        compile_model(model)
+          compile_model(model)
 
-        model
+          model
+        end.call
       end
 
       def should_be_included

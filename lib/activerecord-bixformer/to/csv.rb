@@ -6,15 +6,20 @@ module ActiveRecord
           super(:csv, plan)
         end
 
+        def clear
+          super
+
+          @csv_title_row = nil
+        end
+
         def csv_title_row
-          compile.csv_titles
+          @csv_title_row ||= compile.csv_titles
         end
 
         def csv_body_row(activerecord)
-          model    = compile
-          body_map = model.export(activerecord)
+          body_map = compile.export(activerecord)
 
-          model.csv_titles.map { |title| body_map[title] }
+          csv_title_row.map { |title| body_map[title] }
         end
       end
     end
