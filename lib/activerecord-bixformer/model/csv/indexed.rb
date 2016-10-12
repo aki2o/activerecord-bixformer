@@ -45,6 +45,7 @@ module ActiveRecord
           end
 
           def csv_title(attribute_name)
+            # TODO: indexed 以外の複数を扱うクラスがあった時の対処が必要
             if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Indexed) }
               parents.map { |parent| parent.translator.translate_model }.join + super
             else

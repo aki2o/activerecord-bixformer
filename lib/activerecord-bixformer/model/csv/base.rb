@@ -61,6 +61,8 @@ module ActiveRecord
           def csv_title(attribute_name)
             @translator.translate_attribute(attribute_name)
           end
+
+          alias_method :translate, :csv_title
         end
       end
     end

@@ -110,6 +110,10 @@ module ActiveRecord
           activerecord_constant.find_by!(condition)
         end
 
+        def translate(attribute_name)
+          @translator.translate_attribute(attribute_name)
+        end
+
         private
 
         def make_each_attribute_import_value(parent_record_id = nil, &block)
