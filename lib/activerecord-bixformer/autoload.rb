@@ -6,7 +6,9 @@ module ActiveRecord
     autoload :Plan,                           'activerecord-bixformer/plan'
     autoload :PlanAccessor,                   'activerecord-bixformer/plan_accessor'
     autoload :ModelCallback,                  'activerecord-bixformer/model_callback'
+    autoload :Errors,                         'activerecord-bixformer/error'
     autoload :ImportError,                    'activerecord-bixformer/error'
+    autoload :AttributeError,                 'activerecord-bixformer/error'
     autoload :DataInvalid,                    'activerecord-bixformer/error'
 
     module Attribute

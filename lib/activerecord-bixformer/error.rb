@@ -1,14 +1,40 @@
 module ActiveRecord
   module Bixformer
+    class Errors < Array
+      def messages
+        map(&:message)
+      end
+
+      def full_messages
+        map(&:full_message)
+      end
+    end
+
     class ImportError < ::StandardError
+      attr_reader :model
+
+      def initialize(model)
+        @model = model
+
+        super("failed to import #{model.name}")
+      end
+    end
+
+    class AttributeError < ::StandardError
       def initialize(attribute, value, type)
+        @attribute = attribute
+
+        super(generate_message(attribute, type, value))
+      end
+
+      def full_message
         options = {
           default: "%{attribute} %{message}",
-          attribute: attribute.model.translate(attribute.name),
-          message: generate_message(attribute, type, value)
+          attribute: @attribute.model.translate(@attribute.name),
+          message: message
         }
 
-        super(I18n.t(:"errors.format", options))
+        I18n.t(:"errors.format", options)
       end
 
       private
@@ -49,7 +75,7 @@ module ActiveRecord
       end
     end
 
-    class DataInvalid < ImportError
+    class DataInvalid < AttributeError
       def initialize(attribute, value)
         super(attribute, value, :invalid)
       end
