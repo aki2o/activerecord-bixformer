@@ -12,20 +12,28 @@ module ActiveRecord
           def export(record_or_relation)
             record_or_relation ||= []
 
-            # has_many でしか使わない想定なので record_or_relation は ActiveRecord::Relation のはず
-            (1..options[:size]).inject({}) do |values, index|
-              update_translator(index)
+            errors.clear
 
-              values.merge(super(record_or_relation[index-1]))
+            run_bixformer_callback :export do
+              # has_many でしか使わない想定なので record_or_relation は ActiveRecord::Relation のはず
+              (1..options[:size]).inject({}) do |values, index|
+                update_translator(index)
+
+                values.merge(do_export(record_or_relation[index-1]))
+              end
             end
           end
 
           def import(csv_body_row, parent_record_id = nil)
-            # has_many でしか使わない想定なので ActiveRecord::Relation を返却
-            (1..options[:size]).map do |index|
-              update_translator(index)
+            errors.clear
 
-              super
+            run_bixformer_callback :import do
+              # has_many でしか使わない想定なので ActiveRecord::Relation を返却
+              (1..options[:size]).map do |index|
+                update_translator(index)
+
+                do_import(csv_body_row, parent_record_id)
+              end
             end
           end
 

@@ -15,18 +15,26 @@ module ActiveRecord
             # has_many でしか使わない想定なので record_or_relation は ActiveRecord::Relation のはず
             record_of = record_or_relation&.where(@options[:key] => @options[:in])&.index_by(@options[:key]) || {}
 
-            @options[:in].inject({}) do |values, key|
-              update_translator(key)
+            errors.clear
 
-              values.merge(super(record_of[key]))
+            run_bixformer_callback :export do
+              @options[:in].inject({}) do |values, key|
+                update_translator(key)
+
+                values.merge(do_export(record_of[key]))
+              end
             end
           end
 
           def import(csv_body_row, parent_record_id = nil)
-            @options[:in].map do |key|
-              update_translator(key)
+            errors.clear
 
-              super
+            run_bixformer_callback :import do
+              @options[:in].map do |key|
+                update_translator(key)
+
+                do_import(csv_body_row, parent_record_id)
+              end
             end
           end
 
