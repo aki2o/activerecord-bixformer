@@ -173,7 +173,7 @@ module ActiveRecord
               end
 
               if association.errors.present?
-                @errors += association.errors
+                association.errors.each { |e| @errors << e }
 
                 next
               end

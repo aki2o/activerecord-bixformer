@@ -158,13 +158,25 @@ EOS
       let(:csv_row) do
         csv_data = <<EOS
 #{SampleCsv.user_all_using_indexed_association_title.chomp}
-#{SampleCsv.user_all_using_indexed_association_line_new.chomp.gsub(/[0-9]/, 'a')}
+#{SampleCsv.user_all_using_indexed_association_line_new.chomp.gsub(/[0-9]/, 'a').gsub(/No/, 'NG')}
 EOS
         CSV.parse(csv_data, headers: true).first
       end
 
       it 'abort' do
         expect{subject}.to raise_error(ActiveRecord::Bixformer::ImportError)
+      end
+
+      it "has original error" do
+        error = begin
+                  subject
+                rescue => e
+                  e
+                end
+
+        expect(error.model.errors).to be_an_instance_of ActiveRecord::Bixformer::Errors
+        expect(error.model.errors.full_messages).to be_an_instance_of Array
+        expect(error.model.errors.full_messages.size).to be > 0
       end
     end
 
