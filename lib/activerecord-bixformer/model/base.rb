@@ -17,12 +17,13 @@ module ActiveRecord
         include ::ActiveRecord::Bixformer::ModelCallback
 
         attr_reader :name, :options, :parent, :attributes, :associations,
-                    :preferred_skip_attributes, :translator
+                    :preferred_skip_attributes, :translator, :errors
 
         def initialize(model_or_association_name, options)
           @name         = model_or_association_name.to_s
           @options      = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
           @associations = []
+          @errors       = ::ActiveRecord::Bixformer::Errors.new
         end
 
         def setup(plan)
@@ -122,9 +123,15 @@ module ActiveRecord
 
           run_bixformer_callback :import, type: :attribute do
             @attributes.each do |attr|
-              attribute_value = run_bixformer_callback :import, on: attr.name do
-                block.call(attr)
-              end
+              attribute_value = begin
+                                  run_bixformer_callback :import, on: attr.name do
+                                    block.call(attr)
+                                  end
+                                rescue ::ActiveRecord::Bixformer::AttributeError => e
+                                  @errors << e
+
+                                  next
+                                end
 
               # 取り込み時は、 preferred_skip な属性では、有効でない値は取り込まない
               next if ! presence_value?(attribute_value) &&
@@ -163,6 +170,12 @@ module ActiveRecord
             @associations.each do |association|
               association_value = run_bixformer_callback :import, on: association.name do
                 block.call(association, self_record_id)
+              end
+
+              if association.errors.present?
+                @errors += association.errors
+
+                next
               end
 
               if association_value.is_a?(::Array)

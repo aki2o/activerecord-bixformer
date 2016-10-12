@@ -154,6 +154,20 @@ EOS
       it { is_expected.to eq expect_value }
     end
 
+    context "invalid data included" do
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.user_all_using_indexed_association_title.chomp}
+#{SampleCsv.user_all_using_indexed_association_line_new.chomp.gsub(/[0-9]/, 'a')}
+EOS
+        CSV.parse(csv_data, headers: true).first
+      end
+
+      it 'abort' do
+        expect{subject}.to raise_error(ActiveRecord::Bixformer::ImportError)
+      end
+    end
+
     context "invalid id child record" do
       let(:preferred_skip_attributes) { SamplePreferredSkipAttribute.user_all_default }
 
