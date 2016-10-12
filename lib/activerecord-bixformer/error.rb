@@ -22,19 +22,13 @@ module ActiveRecord
 
     class AttributeError < ::StandardError
       def initialize(attribute, value, type)
-        @attribute = attribute
+        @attribute = attribute.model.translate(attribute.name)
 
         super(generate_message(attribute, type, value))
       end
 
       def full_message
-        options = {
-          default: "%{attribute} %{message}",
-          attribute: @attribute.model.translate(@attribute.name),
-          message: message
-        }
-
-        I18n.t(:"errors.format", options)
+        I18n.t(:"errors.format", default: "%{attribute} %{message}", attribute: @attribute, message: message)
       end
 
       private
