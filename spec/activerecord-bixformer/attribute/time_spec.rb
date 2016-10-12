@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Time do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Time.new(nil, attribute_name, options) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Time.new(model, attribute_name, options) }
+  let(:model) { ActiveRecord::Bixformer::Compiler.new(:csv, plan).compile }
+  let(:plan) { SampleUserPlan.new(entry: SampleEntry.user_all_using_indexed_association) }
   let(:attribute_name) { :joined_at }
   let(:record) { User.new("#{attribute_name}" => value) }
   let(:options) { nil }
@@ -50,7 +52,7 @@ describe ActiveRecord::Bixformer::Attribute::Time do
       before { ENV['TZ'] = 'US/Central' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
 
       context "has options" do
@@ -70,13 +72,13 @@ describe ActiveRecord::Bixformer::Attribute::Time do
       let(:value) { 'hoge' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
 
       context "has options" do
         let(:options) { { format: :ymdhms } }
 
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
     end
   end

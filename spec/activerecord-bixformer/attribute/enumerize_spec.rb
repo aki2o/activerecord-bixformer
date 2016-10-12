@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Enumerize do
   let(:attribute) { ActiveRecord::Bixformer::Attribute::Enumerize.new(model, attribute_name, nil) }
-  let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
+  let(:model) { ActiveRecord::Bixformer::Compiler.new(:csv, plan).compile.associations.find { |o| o.name == 'posts' } }
+  let(:plan) { SampleUserPlan.new(entry: SampleEntry.user_all_using_indexed_association) }
   let(:attribute_name) { :status }
   let(:record) { Post.new("#{attribute_name}" => value) }
 
@@ -52,7 +53,7 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
     context "wrong value" do
       let(:value) { 'hoge' }
 
-      it { expect{subject}.to raise_error(ArgumentError) }
+      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
     end
   end
 end

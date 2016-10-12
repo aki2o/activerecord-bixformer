@@ -8,6 +8,8 @@ module ActiveRecord
           @model   = model
           @name    = attribute_name.to_s
           @options = (options.is_a?(::Hash) ? options : {}).with_indifferent_access
+
+          @options[:raise] = true unless @options.key?(:raise)
         end
 
         def export(record)

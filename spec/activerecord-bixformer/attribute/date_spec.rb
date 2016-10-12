@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Date do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Date.new(nil, attribute_name, options) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Date.new(model, attribute_name, options) }
+  let(:model) { ActiveRecord::Bixformer::Compiler.new(:csv, plan).compile }
+  let(:plan) { SampleUserPlan.new(entry: SampleEntry.user_all_using_indexed_association) }
   let(:attribute_name) { :joined_at }
   let(:record) { User.new("#{attribute_name}" => value) }
   let(:options) { nil }
@@ -40,7 +42,7 @@ describe ActiveRecord::Bixformer::Attribute::Date do
       let(:value) { '2016 04 01' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
 
       context "has options" do
@@ -60,13 +62,13 @@ describe ActiveRecord::Bixformer::Attribute::Date do
       let(:value) { 'hoge' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
 
       context "has options" do
         let(:options) { { format: :ymd } }
 
-        it { expect{subject}.to raise_error(ArgumentError) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
     end
   end

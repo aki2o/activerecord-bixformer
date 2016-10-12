@@ -11,9 +11,14 @@ module ActiveRecord
         end
 
         def import(value)
-          return nil unless value
+          return nil if value.blank?
 
-          @model.activerecord_constant.__send__("#{@name}_options").to_h[value.strip]
+          value      = value.strip
+          boolean_of = @model.activerecord_constant.__send__("#{@name}_options").to_h
+
+          return boolean_of[value] if boolean_of.key?(value)
+
+          raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
         end
       end
     end

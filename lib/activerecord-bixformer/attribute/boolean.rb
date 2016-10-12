@@ -10,6 +10,8 @@ module ActiveRecord
         end
 
         def import(value)
+          return nil if value.blank?
+
           true_value = (@options.is_a?(::Hash) && @options[:true]) || 'true'
           false_value = (@options.is_a?(::Hash) && @options[:false]) || 'false'
 
@@ -18,6 +20,8 @@ module ActiveRecord
             true
           when false_value
             false
+          else
+            raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
           end
         end
       end

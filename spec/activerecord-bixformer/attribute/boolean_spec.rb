@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Boolean do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Boolean.new(nil, attribute_name, options) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Boolean.new(model, attribute_name, options) }
+  let(:model) { ActiveRecord::Bixformer::Compiler.new(:csv, plan).compile.associations.find { |o| o.name == 'posts' } }
+  let(:plan) { SampleUserPlan.new(entry: SampleEntry.user_all_using_indexed_association) }
   let(:attribute_name) { :secret }
   let(:record) { Post.new("#{attribute_name}" => value) }
 
@@ -93,8 +95,14 @@ describe ActiveRecord::Bixformer::Attribute::Boolean do
 
       context "other value" do
         let(:value) { "Hoge" }
-        
-        it { is_expected.to eq nil }
+
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+
+        context "raise falsy" do
+          before { options.merge!(raise: false) }
+
+          it { is_expected.to eq nil }
+        end
       end
     end
 
@@ -104,7 +112,7 @@ describe ActiveRecord::Bixformer::Attribute::Boolean do
       context "wrong value" do
         let(:value) { "Yes" }
         
-        it { is_expected.to eq nil }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
       end
 
       context "true" do

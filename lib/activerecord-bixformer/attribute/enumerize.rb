@@ -14,7 +14,7 @@ module ActiveRecord
           return nil if value.blank?
 
           @model.activerecord_constant.__send__(@name).options.to_h[value.strip] or
-            raise ArgumentError.new "Not acceptable enumerize value : #{value}"
+            raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
         end
       end
     end

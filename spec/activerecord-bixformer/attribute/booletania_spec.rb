@@ -1,10 +1,12 @@
 require 'spec_helper'
 
 describe ActiveRecord::Bixformer::Attribute::Booletania do
-  let(:attribute) { ActiveRecord::Bixformer::Attribute::Booletania.new(model, attribute_name, nil) }
-  let(:model) { ActiveRecord::Bixformer::Model::Base.new(:post, nil) }
+  let(:attribute) { ActiveRecord::Bixformer::Attribute::Booletania.new(model, attribute_name, options) }
+  let(:model) { ActiveRecord::Bixformer::Compiler.new(:csv, plan).compile.associations.find { |o| o.name == 'posts' } }
+  let(:plan) { SampleUserPlan.new(entry: SampleEntry.user_all_using_indexed_association) }
   let(:attribute_name) { :secret }
   let(:record) { Post.new("#{attribute_name}" => value) }
+  let(:options) { nil }
 
   describe "#export" do
     subject { attribute.export(record) }
@@ -58,7 +60,13 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
     context "wrong value" do
       let(:value) { 'true' }
 
-      it { is_expected.to eq nil }
+      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+
+      context "raise falsy" do
+        let(:options) { { raise: false } }
+
+        it { is_expected.to eq nil }
+      end
     end
   end
 end

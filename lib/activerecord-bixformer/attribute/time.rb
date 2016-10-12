@@ -13,17 +13,17 @@ module ActiveRecord
         def import(value)
           return nil if value.blank?
 
-          begin
-            ::Time.parse(value)
-          rescue => e
-            format_string = ::Time::DATE_FORMATS[option_format]
+          result = begin
+                     ::Time.parse(value)
+                   rescue
+                     format_string = ::Time::DATE_FORMATS[option_format]
 
-            if format_string
-              ::Time.strptime(value, format_string)
-            else
-              raise e
-            end
-          end
+                     ::Time.strptime(value, format_string) rescue nil if format_string
+                   end
+
+          return result if result
+
+          raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
         end
 
         private
