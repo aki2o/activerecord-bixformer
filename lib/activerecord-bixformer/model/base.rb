@@ -39,6 +39,7 @@ module ActiveRecord
 
           @preferred_skip_attributes = @plan.pickup_value_for(self, :preferred_skip_attributes, [])
           @default_values            = @plan.pickup_value_for(self, :default_values, {})
+          @sort_indexes              = @plan.pickup_value_for(self, :sort_indexes, {})
 
           # At present, translation function is only i18n
           @translator = ::ActiveRecord::Bixformer::Translator::I18n.new
@@ -192,6 +193,25 @@ module ActiveRecord
           end
 
           values
+        end
+
+        def sortable_value(attribute, value)
+          index = @sort_indexes[attribute.name] || @plan.entry_attribute_size
+
+          { index: index, value: value }
+        end
+
+        def sort(sortable_values)
+          sortable_values_size = sortable_values.size.to_f
+
+          sortable_values.sort_by.with_index(0) do |v, i|
+            # Enumerable#sort は安定ではないので、 sort_by を使って、
+            # 明示的にユニークで必ず増加する数値を加えることで、同じ index だった場合に
+            # 順序が変わらないことを保証する
+            v[:index] + i / sortable_values_size
+          end.map do |v|
+            v[:value]
+          end
         end
       end
     end

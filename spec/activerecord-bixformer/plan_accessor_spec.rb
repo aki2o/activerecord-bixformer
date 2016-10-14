@@ -15,6 +15,13 @@ describe ActiveRecord::Bixformer::PlanAccessor do
     end
   end
 
+  describe "#entry_attribute_size" do
+    subject { plan.entry_attribute_size }
+    let(:plan_options) { { entry: SampleEntry.user_all_using_indexed_association } }
+
+    it { is_expected.to eq 11 }
+  end
+
   describe "#pickup_value_for" do
     subject { plan.pickup_value_for(model, config_name, default_value) }
 

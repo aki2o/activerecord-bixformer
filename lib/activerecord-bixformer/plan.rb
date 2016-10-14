@@ -14,6 +14,7 @@ module ActiveRecord
         class_attribute :__bixformer_unique_attributes
         class_attribute :__bixformer_required_condition
         class_attribute :__bixformer_default_values
+        class_attribute :__bixformer_sort_indexes
         class_attribute :__bixformer_translation_config
 
         self.__bixformer_entry                     = {}
@@ -22,6 +23,7 @@ module ActiveRecord
         self.__bixformer_unique_attributes         = []
         self.__bixformer_required_condition        = {}
         self.__bixformer_default_values            = {}
+        self.__bixformer_sort_indexes              = {}
         self.__bixformer_translation_config        = { scope: :bixformer, extend_scopes: [] }
       end
 
@@ -36,7 +38,7 @@ module ActiveRecord
 
         [
           :entry, :preferred_skip_attributes, :required_attributes, :unique_attributes,
-          :required_condition, :default_values, :translation_config
+          :required_condition, :default_values, :sort_indexes, :translation_config
         ].each do |config_name|
           define_method "bixformer_#{config_name}" do |v|
             self.__send__("__bixformer_#{config_name}=", v)

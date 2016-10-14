@@ -100,6 +100,16 @@ module ActiveRecord
         [type, arguments]
       end
 
+      def entry_attribute_size
+        counter = -> (v) do
+          (v[:attributes] || {}).keys.size + (v[:associations] || {}).values.inject(0) do |sum, assoc_v|
+            sum + counter.call(assoc_v)
+          end
+        end
+
+        @entry_attribute_size ||= counter.call(compile_config_value(:entry))
+      end
+
       private
 
       def compile_config_value(config_name)

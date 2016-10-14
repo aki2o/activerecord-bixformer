@@ -25,10 +25,7 @@ module ActiveRecord
           end
 
           def csv_titles
-            [
-              *@attributes.map { |attr| csv_title(attr.name) },
-              *@associations.flat_map(&:csv_titles)
-            ]
+            sort(sortable_csv_titles)
           end
 
           def csv_title(attribute_name)
@@ -74,6 +71,13 @@ module ActiveRecord
             make_each_association_import_value(values) do |association, self_record_id|
               association.import(csv_body_row, self_record_id)
             end
+          end
+
+          def sortable_csv_titles
+            [
+              *@attributes.map { |attr| sortable_value(attr, csv_title(attr.name)) },
+              *@associations.flat_map { |assoc| assoc.__send__(:sortable_csv_titles) }
+            ]
           end
         end
       end

@@ -46,14 +46,6 @@ module ActiveRecord
             end
           end
 
-          def csv_titles
-            @options[:in].flat_map do |key|
-              update_translator(key)
-
-              super
-            end
-          end
-
           def translate(attribute_name)
             # TODO: mapped 以外の複数を扱うクラスがあった時の対処が必要
             if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Mapped) }
@@ -64,6 +56,14 @@ module ActiveRecord
           end
 
           private
+
+          def sortable_csv_titles
+            @options[:in].flat_map do |key|
+              update_translator(key)
+
+              super
+            end
+          end
 
           def update_translator(key)
             key = @options[:translate] ? @options[:translate].call(key) : key

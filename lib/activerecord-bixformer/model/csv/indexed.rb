@@ -44,14 +44,6 @@ module ActiveRecord
             super
           end
 
-          def csv_titles
-            (1..options[:size]).flat_map do |index|
-              update_translator(index)
-
-              super
-            end
-          end
-
           def csv_title(attribute_name)
             # TODO: indexed 以外の複数を扱うクラスがあった時の対処が必要
             if parents.find { |parent| parent.is_a?(::ActiveRecord::Bixformer::Model::Csv::Indexed) }
@@ -62,6 +54,14 @@ module ActiveRecord
           end
 
           private
+
+          def sortable_csv_titles
+            (1..options[:size]).flat_map do |index|
+              update_translator(index)
+
+              super
+            end
+          end
 
           def update_translator(index)
             @translator.model_arguments = { index: index }
