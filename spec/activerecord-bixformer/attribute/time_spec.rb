@@ -52,7 +52,7 @@ describe ActiveRecord::Bixformer::Attribute::Time do
       before { ENV['TZ'] = 'US/Central' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
 
       context "has options" do
@@ -72,13 +72,13 @@ describe ActiveRecord::Bixformer::Attribute::Time do
       let(:value) { 'hoge' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
 
       context "has options" do
         let(:options) { { format: :ymdhms } }
 
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
     end
   end

@@ -12,7 +12,7 @@ class SampleEntry
             attributes: {
               name: :string,
               email: :string,
-              age: :string
+              age: :integer
             }
           },
           posts: {

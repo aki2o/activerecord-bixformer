@@ -42,7 +42,7 @@ describe ActiveRecord::Bixformer::Attribute::Date do
       let(:value) { '2016 04 01' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
 
       context "has options" do
@@ -62,13 +62,13 @@ describe ActiveRecord::Bixformer::Attribute::Date do
       let(:value) { 'hoge' }
 
       context "no options" do
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
 
       context "has options" do
         let(:options) { { format: :ymd } }
 
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
     end
   end

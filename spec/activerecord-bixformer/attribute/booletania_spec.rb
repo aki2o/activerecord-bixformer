@@ -60,7 +60,7 @@ describe ActiveRecord::Bixformer::Attribute::Booletania do
     context "wrong value" do
       let(:value) { 'true' }
 
-      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
 
       context "raise falsy" do
         let(:options) { { raise: false } }

@@ -9,7 +9,6 @@ module ActiveRecord
     autoload :Errors,                         'activerecord-bixformer/error'
     autoload :ImportError,                    'activerecord-bixformer/error'
     autoload :AttributeError,                 'activerecord-bixformer/error'
-    autoload :DataInvalid,                    'activerecord-bixformer/error'
 
     module Attribute
       autoload :Base,                'activerecord-bixformer/attribute/base'
@@ -18,6 +17,7 @@ module ActiveRecord
       autoload :Date,                'activerecord-bixformer/attribute/date'
       autoload :Enumerize,           'activerecord-bixformer/attribute/enumerize'
       autoload :FormattedForeignKey, 'activerecord-bixformer/attribute/formatted_foreign_key'
+      autoload :Integer,             'activerecord-bixformer/attribute/integer'
       autoload :Override,            'activerecord-bixformer/attribute/override'
       autoload :String,              'activerecord-bixformer/attribute/string'
       autoload :Time,                'activerecord-bixformer/attribute/time'

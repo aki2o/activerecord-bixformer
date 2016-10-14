@@ -96,7 +96,7 @@ describe ActiveRecord::Bixformer::Attribute::Boolean do
       context "other value" do
         let(:value) { "Hoge" }
 
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
 
         context "raise falsy" do
           before { options.merge!(raise: false) }
@@ -112,7 +112,7 @@ describe ActiveRecord::Bixformer::Attribute::Boolean do
       context "wrong value" do
         let(:value) { "Yes" }
         
-        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+        it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
       end
 
       context "true" do

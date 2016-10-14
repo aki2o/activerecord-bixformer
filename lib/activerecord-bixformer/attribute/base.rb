@@ -23,7 +23,7 @@ module ActiveRecord
         private
 
         def record_attribute_value(record)
-          return nil if @name.match(/\A_/)
+          return nil if @name.match(/\A_/) && ! record.respond_to?(@name)
 
           record.__send__(@name)
         end

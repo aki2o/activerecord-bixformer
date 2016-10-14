@@ -53,7 +53,7 @@ describe ActiveRecord::Bixformer::Attribute::Enumerize do
     context "wrong value" do
       let(:value) { 'hoge' }
 
-      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::DataInvalid) }
+      it { expect{subject}.to raise_error(ActiveRecord::Bixformer::AttributeError) }
     end
   end
 end

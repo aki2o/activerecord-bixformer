@@ -23,7 +23,7 @@ module ActiveRecord
 
           return result if result
 
-          raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
+          raise ::ActiveRecord::Bixformer::AttributeError.new(self, value) if @options[:raise]
         end
 
         private

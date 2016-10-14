@@ -14,7 +14,7 @@ module ActiveRecord
           return nil if value.blank?
 
           @model.activerecord_constant.__send__(@name).options.to_h[value.strip] or
-            raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
+            raise ::ActiveRecord::Bixformer::AttributeError.new(self, value) if @options[:raise]
         end
       end
     end

@@ -73,7 +73,7 @@ EOS
         {
           account: "import-taro",
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
-          profile_attributes: { name: "Taro Import", email: nil, age: "13" },
+          profile_attributes: { name: "Taro Import", email: nil, age: 13 },
           posts_attributes: [
             { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { content: "Good bye!", status: "wip", secret: true, tags_attributes: [] }
@@ -91,7 +91,7 @@ EOS
         {
           account: "import-taro",
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
-          profile_attributes: { name: "Taro Import", email: nil, age: "13" },
+          profile_attributes: { name: "Taro Import", email: nil, age: 13 },
           posts_attributes: [
             { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { content: "Good bye!", status: "wip", secret: true }
@@ -122,7 +122,7 @@ EOS
           id: 1,
           account: "sample-taro",
           joined_at: joined_at,
-          profile_attributes: { name: "Taro U Sample", email: nil, age: "60", user_id: 1, id: 1 },
+          profile_attributes: { name: "Taro U Sample", email: nil, age: 60, user_id: 1, id: 1 },
           posts_attributes: [
             { id: 1, content: "Good bye!", status: "protected", secret: false, user_id: 1, tags_attributes: [{ name: "Foo", post_id: 1, id: 3 }] },
             { id: 2, content: nil, status: "wip", secret: false, user_id: 1, tags_attributes: [{ name: "Bar", post_id: 2 }] },
@@ -143,7 +143,7 @@ EOS
           account: "import-taro",
           group_id: group_id,
           joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
-          profile_attributes: { name: "Taro Import", email: nil, age: "13" },
+          profile_attributes: { name: "Taro Import", email: nil, age: 13 },
           posts_attributes: [
             { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
             { content: "Good bye!", status: "wip", secret: true, tags_attributes: [] }
@@ -227,7 +227,7 @@ EOS
             id: user_id,
             account: account,
             joined_at: joined_at,
-            profile_attributes: { name: "Taro in wrong group", email: nil, age: "60", user_id: user_id },
+            profile_attributes: { name: "Taro in wrong group", email: nil, age: 60, user_id: user_id },
             posts_attributes: [
               { content: "belongs to wrong group!", status: "protected", secret: false, user_id: user_id, tags_attributes: [{name: "Foo"}] }
             ]

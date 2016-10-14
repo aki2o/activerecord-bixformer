@@ -18,7 +18,7 @@ module ActiveRecord
 
           return boolean_of[value] if boolean_of.key?(value)
 
-          raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
+          raise ::ActiveRecord::Bixformer::AttributeError.new(self, value) if @options[:raise]
         end
       end
     end

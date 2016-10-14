@@ -3,7 +3,7 @@ module ActiveRecord
     module Attribute
       class Boolean < ::ActiveRecord::Bixformer::Attribute::Base
         def export(record)
-          true_value = (@options.is_a?(::Hash) && @options[:true]) || 'true'
+          true_value  = (@options.is_a?(::Hash) && @options[:true]) || 'true'
           false_value = (@options.is_a?(::Hash) && @options[:false]) || 'false'
 
           record_attribute_value(record).present? ? true_value : false_value
@@ -12,7 +12,7 @@ module ActiveRecord
         def import(value)
           return nil if value.blank?
 
-          true_value = (@options.is_a?(::Hash) && @options[:true]) || 'true'
+          true_value  = (@options.is_a?(::Hash) && @options[:true]) || 'true'
           false_value = (@options.is_a?(::Hash) && @options[:false]) || 'false'
 
           case value
@@ -21,7 +21,7 @@ module ActiveRecord
           when false_value
             false
           else
-            raise ::ActiveRecord::Bixformer::DataInvalid.new(self, value) if @options[:raise]
+            raise ::ActiveRecord::Bixformer::AttributeError.new(self, value) if @options[:raise]
           end
         end
       end

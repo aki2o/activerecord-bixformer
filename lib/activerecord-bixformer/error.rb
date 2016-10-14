@@ -21,10 +21,10 @@ module ActiveRecord
     end
 
     class AttributeError < ::StandardError
-      def initialize(attribute, value, type)
+      def initialize(attribute, value, type = :invalid, options = {})
         @attribute = attribute.model.translate(attribute.name)
 
-        super(generate_message(attribute, type, value))
+        super(generate_message(attribute, type, value, options))
       end
 
       def full_message
@@ -34,7 +34,7 @@ module ActiveRecord
       private
 
       # implemented with referencing to https://github.com/rails/rails/blob/517cf249c369d4bca40b1f590ca641d8b717985e/activemodel/lib/active_model/errors.rb#L462
-      def generate_message(attribute, type, value)
+      def generate_message(attribute, type, value, options)
         model_klass = attribute.model.activerecord_constant
         model_scope = model_klass.i18n_scope
 
@@ -58,20 +58,14 @@ module ActiveRecord
 
         key = defaults.shift
 
-        options = {
+        options = options.merge(
           default: defaults,
           model: model_klass.model_name.human,
           attribute: model_klass.human_attribute_name(attribute.name),
           value: value
-        }
+        )
 
         I18n.translate(key, options)
-      end
-    end
-
-    class DataInvalid < AttributeError
-      def initialize(attribute, value)
-        super(attribute, value, :invalid)
       end
     end
   end
