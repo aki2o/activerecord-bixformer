@@ -34,6 +34,7 @@ class CreateAllTables < ActiveRecord::Migration
     create_table :tags do |t|
       t.integer :post_id, null: false
       t.string :name, null: false
+      t.string :memo
     end
     add_index :tags, [:post_id, :name], unique: true
   end

@@ -13,7 +13,7 @@ module ActiveRecord
 
           def export(record_or_relation)
             # has_many でしか使わない想定なので record_or_relation は ActiveRecord::Relation のはず
-            record_of = record_or_relation&.where(@options[:key] => @options[:in])&.index_by(@options[:key]) || {}
+            record_of = record_or_relation&.where(@options[:key] => @options[:in])&.index_by(&@options[:key].to_sym) || {}
 
             errors.clear
 
@@ -33,7 +33,9 @@ module ActiveRecord
               @options[:in].map do |key|
                 update_translator(key)
 
-                do_import(csv_body_row, parent_record_id)
+                do_import(csv_body_row, parent_record_id).tap do |o|
+                  o[@options[:key]] = key if presence_value?(o)
+                end
               end
             end
           end

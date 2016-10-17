@@ -32,3 +32,11 @@ class SampleUserPlan
   }
   bixformer_sort_indexes              :sort_indexes
 end
+
+class SamplePostPlan
+  include ActiveRecord::Bixformer::Plan
+  include SamplePlanFunctions
+
+  bixformer_for                       :post
+  bixformer_entry                     :entry
+end

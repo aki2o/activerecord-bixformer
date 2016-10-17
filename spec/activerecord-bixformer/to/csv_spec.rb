@@ -54,6 +54,12 @@ describe ActiveRecord::Bixformer::To::Csv do
 
       it { is_expected.to eq expected_value }
     end
+
+    context "mapped" do
+      let(:plan) { SamplePostPlan.new(entry: SampleEntry.post_using_mapped_tag) }
+
+      it { is_expected.to eq SampleCsv.post_using_mapped_tag_title.chomp.split(",") }
+    end
   end
 
   describe "#csv_body_row" do
@@ -65,6 +71,19 @@ describe ActiveRecord::Bixformer::To::Csv do
       let(:expect_value) do
         [
           "#{ar.id}","sample-taro",ar.joined_at.to_s(:ymdhms),"Taro Sample","",24,"#{ar.posts[0].id}","Hello!","Now on show","No","Foo","Fuga","#{ar.posts[1].id}","","Write in Process","Yes",nil,nil,nil,nil,nil,nil,nil,nil
+        ]
+      end
+
+      it { is_expected.to eq expect_value }
+    end
+
+    context "mapped" do
+      let(:plan) { SamplePostPlan.new(entry: SampleEntry.post_using_mapped_tag) }
+      let(:ar) { User.find_by(account: 'sample-taro').posts.first }
+
+      let(:expect_value) do
+        [
+          "#{ar.id}","Hello!","Now on show","","fufufu",""
         ]
       end
 

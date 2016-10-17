@@ -6,6 +6,7 @@ module ActiveRecord
       module Csv
         autoload :Base,    'activerecord-bixformer/model/csv/base'
         autoload :Indexed, 'activerecord-bixformer/model/csv/indexed'
+        autoload :Mapped,  'activerecord-bixformer/model/csv/mapped'
       end
     end
 

@@ -251,5 +251,31 @@ EOS
         end
       end
     end
+
+    context "mapped" do
+      let(:plan) { SamplePostPlan.new(entry: SampleEntry.post_using_mapped_tag) }
+
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.post_using_mapped_tag_title.chomp}
+,It's new post!,Write in Process,first tag,,last tag
+EOS
+
+        CSV.parse(csv_data, headers: true).first
+      end
+
+      let(:expect_value) do
+        {
+          content: "It's new post!",
+          status: "wip",
+          tags_attributes: [
+            { memo: "first tag", name: "Hoge" },
+            { memo: "last tag", name: "Foo" }
+          ]
+        }.with_indifferent_access
+      end
+
+      it { is_expected.to eq expect_value }
+    end
   end
 end

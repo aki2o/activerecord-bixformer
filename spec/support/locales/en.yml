@@ -25,6 +25,12 @@ en:
         content: Body%{index}
       user/posts/tags:
         name: TagName%{index}
+      post:
+        id: PostCode
+        content: Body
+        status: Status
+      post/tags:
+        memo: Tag_%{key}_Memo
     extended:
       attributes:
         user:

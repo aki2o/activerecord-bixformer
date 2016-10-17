@@ -35,5 +35,28 @@ class SampleEntry
         }
       }
     end
+
+    def post_using_mapped_tag
+      {
+        attributes: {
+          id: :string,
+          content: :string,
+          status: :enumerize
+        },
+        associations: {
+          tags: {
+            type: [
+              :mapped,
+              key: :name,
+              in: %w( Hoge Fuga Foo ),
+              translate: -> (name) { name == 'Foo' ? 'Bar' : name }
+            ],
+            attributes: {
+              memo: :string
+            }
+          }
+        }
+      }
+    end
   end
 end
