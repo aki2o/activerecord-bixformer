@@ -84,7 +84,9 @@ module ActiveRecord
         end
 
         def should_be_included
-          @model.activerecord_constant.reflections.find { |k, r| r.foreign_key == @name }.first
+          @model.activerecord_constant.reflections.find do |k, r|
+            r.foreign_key == @name && r.class_name.constantize.respond_to?(:table_name)
+          end&.first
         end
 
         private

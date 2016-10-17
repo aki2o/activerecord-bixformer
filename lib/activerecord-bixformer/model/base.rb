@@ -105,9 +105,9 @@ module ActiveRecord
             assoc_should_be_included = assoc.should_be_included
 
             if assoc_should_be_included.empty?
-              arr.push assoc.name.to_sym
+              arr.push assoc.name
             else
-              hash[assoc.name.to_sym] = assoc_should_be_included
+              hash[assoc.name] = assoc_should_be_included
             end
           end
 
