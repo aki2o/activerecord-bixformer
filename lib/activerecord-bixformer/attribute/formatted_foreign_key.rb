@@ -39,10 +39,10 @@ module ActiveRecord
         def import(value)
           return nil unless value.present?
 
-          parser    = @options[:parser]
-          find_by   = @options[:find_by] || :find_by
-          scope     = @options[:scope] || :all
-          creator   = @options[:creator] || :save
+          parser  = @options[:parser]
+          find_by = @options[:find_by]
+          scope   = @options[:scope] || :all
+          creator = @options[:creator] || :save
 
           condition = if parser.is_a?(::Proc)
                         parser.call(value)
@@ -60,8 +60,14 @@ module ActiveRecord
 
           foreign_record = if find_by.is_a?(::Proc)
                              find_by.call(scoped_relation, condition)
-                           else
+                           elsif find_by
                              scoped_relation.__send__(find_by, condition)
+                           elsif scoped_relation.respond_to?(:find_by)
+                             scoped_relation.find_by(condition)
+                           else
+                             scoped_relation.find do |r|
+                               condition.all? { |k, v| r.__send__(k) == v rescue false }
+                             end
                            end
 
           if ! foreign_record && @options[:create]
