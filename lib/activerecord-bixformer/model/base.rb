@@ -87,6 +87,20 @@ module ActiveRecord
           arr  = []
           hash = {}
 
+          @attributes.each do |attr|
+            attr_should_be_included = attr.should_be_included
+
+            next unless attr_should_be_included
+
+            if attr_should_be_included.is_a?(::Hash)
+              hash.merge!(attr_should_be_included)
+            elsif attr_should_be_included.is_a?(::Array)
+              arr.push *attr_should_be_included
+            else
+              arr.push attr_should_be_included
+            end
+          end
+
           @associations.each do |assoc|
             assoc_should_be_included = assoc.should_be_included
 

@@ -83,6 +83,10 @@ module ActiveRecord
           foreign_record&.__send__(foreign_constant.primary_key)
         end
 
+        def should_be_included
+          @model.activerecord_constant.reflections.find { |k, r| r.foreign_key == @name }.first
+        end
+
         private
 
         def foreign_constant

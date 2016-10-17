@@ -20,6 +20,10 @@ module ActiveRecord
           value
         end
 
+        def should_be_included
+          nil
+        end
+
         private
 
         def record_attribute_value(record)
