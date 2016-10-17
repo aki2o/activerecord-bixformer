@@ -87,17 +87,30 @@ module ActiveRecord
           arr  = []
           hash = {}
 
+          symbolizer = -> (value) do
+            case value
+            when ::Hash
+              value.map { |k, v| [k.to_sym, symbolizer.call(v)]}.to_h
+            when ::Array
+              value.map { |v| symbolizer.call(v) }
+            when ::String
+              value.to_sym
+            else
+              value
+            end
+          end
+
           @attributes.each do |attr|
             attr_should_be_included = attr.should_be_included
 
             next unless attr_should_be_included
 
             if attr_should_be_included.is_a?(::Hash)
-              hash.merge!(attr_should_be_included)
+              hash.merge!(symbolizer.call(attr_should_be_included))
             elsif attr_should_be_included.is_a?(::Array)
-              arr.push *attr_should_be_included
+              arr.push *symbolizer.call(attr_should_be_included)
             else
-              arr.push attr_should_be_included
+              arr.push symbolizer.call(attr_should_be_included)
             end
           end
 
@@ -105,9 +118,9 @@ module ActiveRecord
             assoc_should_be_included = assoc.should_be_included
 
             if assoc_should_be_included.empty?
-              arr.push assoc.name
+              arr.push assoc.name.to_sym
             else
-              hash[assoc.name] = assoc_should_be_included
+              hash[assoc.name.to_sym] = assoc_should_be_included
             end
           end
 

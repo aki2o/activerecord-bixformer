@@ -22,7 +22,7 @@ describe ActiveRecord::Bixformer::Model::Base do
     context "user_all_using_indexed_association" do
       let(:entry) { SampleEntry.user_all_using_indexed_association }
 
-      it { is_expected.to eq ["profile", { "posts" => ["tags"] }] }
+      it { is_expected.to eq [:profile, { posts: [:tags] }] }
     end
   end
 end
