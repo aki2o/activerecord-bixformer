@@ -146,6 +146,8 @@ module ActiveRecord
           normalizer.normalize(values).tap do |normalized_values|
             # 結果ハッシュに何かキーがある場合だけ
             if normalized_values.present?
+              association_names = @associations.map(&:name)
+
               # デフォルト値の補完
               @default_values.each do |attribute_name, default_value|
                 # 有効な値が既に格納されている場合は補完しない
@@ -153,6 +155,9 @@ module ActiveRecord
 
                 # preferred_skip_attributes で指定されてる場合は補完しない
                 next if @preferred_skip_attributes.include?(attribute_name)
+
+                # default_values には association も含まれているため、チェック
+                next if association_names.include?(attribute_name)
 
                 normalized_values[attribute_name] = if default_value.is_a?(::Proc)
                                                       default_value.call
