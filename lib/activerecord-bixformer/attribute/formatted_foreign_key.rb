@@ -80,9 +80,15 @@ module ActiveRecord
         private
 
         def foreign_constant
-          @foreign_constant ||= @model.activerecord_constant
-                              .reflections.values.find { |r| r.foreign_key == @name }
-                              .table_name.classify.constantize
+          @foreign_constant ||= -> do
+            reflection = @model.activerecord_constant.reflections.values.find { |r| r.foreign_key == @name }
+
+            if reflection.respond_to?(:class_name)
+              reflection.class_name.constantize
+            else
+              reflection.table_name.classify.constantize
+            end
+          end.call
         end
       end
     end
