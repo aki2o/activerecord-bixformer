@@ -20,7 +20,12 @@ module ActiveRecord
           end
 
           def verify_csv_titles(csv_title_row)
-            @attributes.map { |attr| csv_title(attr.name) }.all? { |title| csv_title_row.include?(title) } &&
+            attribute_names = activerecord_constant.attribute_names
+
+            @attributes
+              .select { |attr| attribute_names.include?(attr.name) }
+              .map { |attr| csv_title(attr.name) }
+              .all? { |title| csv_title_row.include?(title) } &&
               @associations.all? { |ass| ass.verify_csv_titles(csv_title_row) }
           end
 
