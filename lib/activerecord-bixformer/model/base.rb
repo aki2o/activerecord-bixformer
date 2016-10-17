@@ -77,7 +77,7 @@ module ActiveRecord
         def activerecord_constant
           @activerecord_constant ||=
             if @parent
-              @parent.activerecord_constant.reflections[@name].table_name.classify.constantize
+              @parent.activerecord_constant.reflections[@name].class_name.constantize
             else
               @name.camelize.constantize
             end
