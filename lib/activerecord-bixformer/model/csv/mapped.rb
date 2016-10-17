@@ -41,10 +41,10 @@ module ActiveRecord
           end
 
           def verify_csv_titles(csv_title_row)
-            @options[:in].map do |key|
+            @options[:in].all? do |key|
               update_translator(key)
 
-              return false unless super
+              super
             end
           end
 

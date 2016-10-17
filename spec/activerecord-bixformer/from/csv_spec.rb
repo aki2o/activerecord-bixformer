@@ -55,6 +55,32 @@ EOS
 
       it { is_expected.to be_truthy }
     end
+
+    context "mapped" do
+      let(:plan) { SamplePostPlan.new(entry: SampleEntry.post_using_mapped_tag) }
+
+      let(:csv_row) do
+        csv_data = <<EOS
+#{SampleCsv.post_using_mapped_tag_title.chomp}
+EOS
+
+        CSV.parse(csv_data).first
+      end
+
+      it { is_expected.to be_truthy }
+
+      context "remove last tags name" do
+        let(:csv_row) do
+          csv_data = <<EOS
+#{SampleCsv.post_using_mapped_tag_title.chomp.sub(/,[^,]+$/, '')}
+EOS
+
+          CSV.parse(csv_data).first
+        end
+
+        it { is_expected.to be_falsy }
+      end
+    end
   end
 
   describe "#assignable_attributes" do
