@@ -11,14 +11,14 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "no value" do
       let(:value) { nil }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq nil }
     end
 
     context "by attribute" do
       let(:value) { Group.find_or_create_by!(name: 'hoge').id }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq 'hoge' }
     end
@@ -27,8 +27,8 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
       let(:value) { Group.find_or_create_by!(name: 'hoge').id }
       let(:options) do
         {
-          by: -> (r) { format('name:%s', r.name) },
-          find_by: -> (v) { { name: v.split(':').last } }
+          formatter: -> (r) { format('name:%s', r.name) },
+          parser: -> (v) { { name: v.split(':').last } }
         }
       end
 
@@ -41,14 +41,14 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "no value" do
       let(:value) { nil }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq nil }
     end
 
     context "by attribute" do
       let(:value) { 'hoge' }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq Group.find_by(name: 'hoge').id }
     end
@@ -57,8 +57,8 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
       let(:value) { 'name:hoge' }
       let(:options) do
         {
-          by: -> (r) { format('name:%s', r.name) },
-          find_by: -> (v) { { name: v.split(':').last } }
+          formatter: -> (r) { format('name:%s', r.name) },
+          parser: -> (v) { { name: v.split(':').last } }
         }
       end
 
@@ -67,7 +67,7 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "has scope" do
       let(:value) { 'hoge' }
-      let(:options) { { by: :name, scope: :admins } }
+      let(:options) { { formatter: :name, scope: :admins } }
 
       it { is_expected.to eq nil }
 
@@ -80,7 +80,7 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "has scope as proc" do
       let(:value) { 'hoge' }
-      let(:options) { { by: :name, scope: -> { Group.where(kind: 'guest') } } }
+      let(:options) { { formatter: :name, scope: -> { Group.where(kind: 'guest') } } }
 
       it { is_expected.to eq nil }
 
@@ -93,12 +93,12 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "not exist value" do
       let(:value) { 'fuga' }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq nil }
 
       context "has create option" do
-        let(:options) { { by: :name, create: true } }
+        let(:options) { { formatter: :name, create: true } }
 
         it { is_expected.to eq Group.find_by(name: 'fuga').id }
       end
@@ -106,24 +106,24 @@ describe ActiveRecord::Bixformer::Attribute::FormattedForeignKey do
 
     context "has creator options" do
       let(:value) { 'bad!' }
-      let(:options) { { by: :name } }
+      let(:options) { { formatter: :name } }
 
       it { is_expected.to eq nil }
 
       context "has create option" do
-        let(:options) { { by: :name, create: true } }
+        let(:options) { { formatter: :name, create: true } }
 
         it { is_expected.to eq nil }
       end
 
       context "has create option with creator" do
-        let(:options) { { by: :name, create: true, creator: :save! } }
+        let(:options) { { formatter: :name, create: true, creator: :save! } }
 
         it { expect{subject}.to raise_error(ActiveRecord::RecordInvalid) }
       end
 
       context "has create option with creator as proc" do
-        let(:options) { { by: :name, create: true, creator: -> (r) { r.name = @curr_name; r.save! } } }
+        let(:options) { { formatter: :name, create: true, creator: -> (r) { r.name = @curr_name; r.save! } } }
 
         before { @curr_name = 'good' }
 

@@ -5,16 +5,16 @@ module ActiveRecord
         def initialize(model, attribute_name, options)
           super
 
-          unless @options[:by]
-            raise ArgumentError.new 'Not configured required options : by'
+          unless @options[:formatter]
+            raise ArgumentError.new 'Not configured required options : formatter'
           end
 
-          @options[:find_by] ||= if @options[:by].is_a?(::String) || @options[:by].is_a?(::Symbol)
-                                   @options[:by]
-                                 end
+          @options[:parser] ||= if @options[:formatter].is_a?(::String) || @options[:formatter].is_a?(::Symbol)
+                                  -> (v) { { @options[:formatter] => v } }
+                                end
 
-          unless @options[:find_by]
-            raise ArgumentError.new 'Not configured required options : find_by'
+          unless @options[:parser]
+            raise ArgumentError.new 'Not configured required options : parser'
           end
         end
 
@@ -27,7 +27,7 @@ module ActiveRecord
 
           return nil unless foreign_record
 
-          formatter = @options[:by]
+          formatter = @options[:formatter]
 
           if formatter.is_a?(::Proc)
             formatter.call(foreign_record)
@@ -39,31 +39,33 @@ module ActiveRecord
         def import(value)
           return nil unless value.present?
 
-          find_by   = @options[:find_by]
+          parser    = @options[:parser]
+          find_by   = @options[:find_by] || :find_by
           scope     = @options[:scope] || :all
-          finder    = @options[:finder] || :find_by
           creator   = @options[:creator] || :save
 
-          condition = if find_by.is_a?(::Proc)
-                        find_by.call(value)
+          condition = if parser.is_a?(::Proc)
+                        parser.call(value)
                       else
-                        { find_by => value }
+                        foreign_constant.__send__(parser, value)
                       end
 
           return nil unless condition
 
-          foreign_record = if scope.is_a?(::Proc)
-                             scope.call.__send__(finder, condition)
+          scoped_relation = if scope.is_a?(::Proc)
+                              scope.call
+                            else
+                              foreign_constant.__send__(scope)
+                            end
+
+          foreign_record = if find_by.is_a?(::Proc)
+                             find_by.call(scoped_relation, condition)
                            else
-                             foreign_constant.__send__(scope).__send__(finder, condition)
+                             scoped_relation.__send__(find_by, condition)
                            end
 
           if ! foreign_record && @options[:create]
-            foreign_record = if scope.is_a?(::Proc)
-                               scope.call.build(condition)
-                             else
-                               foreign_constant.__send__(scope).build(condition)
-                             end
+            foreign_record = scoped_relation.build(condition)
 
             if creator.is_a?(::Proc)
               creator.call(foreign_record)
