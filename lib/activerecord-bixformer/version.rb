@@ -1,5 +1,5 @@
 module ActiveRecord
   module Bixformer
-    VERSION = "0.4.12"
+    VERSION = "0.4.13"
   end
 end
