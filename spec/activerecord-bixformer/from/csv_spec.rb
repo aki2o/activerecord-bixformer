@@ -295,8 +295,9 @@ EOS
           content: "It's new post!",
           status: "wip",
           tags_attributes: [
-            { memo: "first tag", name: "Hoge" },
-            { memo: "last tag", name: "Foo" }
+            { name: "Hoge", memo: "first tag" },
+            { name: "Fuga", memo: nil },
+            { name: "Foo", memo: "last tag" }
           ]
         }.with_indifferent_access
       end

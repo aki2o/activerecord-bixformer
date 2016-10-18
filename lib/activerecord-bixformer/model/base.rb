@@ -145,8 +145,8 @@ module ActiveRecord
 
         private
 
-        def make_each_attribute_import_value(parent_record_id = nil, &block)
-          values     = {}.with_indifferent_access
+        def make_each_attribute_import_value(parent_record_id = nil, initializer: {}, &block)
+          values     = initializer.with_indifferent_access
           normalizer = ::ActiveRecord::Bixformer::AssignableAttributesNormalizer.new(plan, self, parent_record_id)
 
           run_bixformer_callback :import, type: :attribute do

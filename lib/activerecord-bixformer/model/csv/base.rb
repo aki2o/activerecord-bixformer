@@ -68,8 +68,8 @@ module ActiveRecord
             end
           end
 
-          def do_import(csv_body_row, parent_record_id = nil)
-            values = make_each_attribute_import_value(parent_record_id) do |attr|
+          def do_import(csv_body_row, parent_record_id = nil, initializer: {})
+            values = make_each_attribute_import_value(parent_record_id, initializer: initializer) do |attr|
               attr.import(csv_body_row[csv_title(attr.name)])
             end
 

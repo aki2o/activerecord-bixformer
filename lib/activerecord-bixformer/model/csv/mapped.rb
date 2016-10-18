@@ -33,9 +33,7 @@ module ActiveRecord
               @options[:in].map do |key|
                 update_translator(key)
 
-                do_import(csv_body_row, parent_record_id).tap do |o|
-                  o[@options[:key]] = key if presence_value?(o)
-                end
+                do_import(csv_body_row, parent_record_id, initializer: { @options[:key] => key })
               end
             end
           end
