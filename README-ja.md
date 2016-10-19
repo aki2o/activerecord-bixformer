@@ -327,9 +327,13 @@ CSV.parse(csv_data).each do |csv_row|
 
     attributes = bixformer.assignable_attributes(csv_row)
     user       = User.new
-    
-    user.assign_attributes(attributes)
-    user.save!
+
+    begin
+      user.assign_attributes(attributes)
+      user.save!
+    rescue ActiveRecord::Bixformer::ImportError => e
+      logger.error e.model.errors.full_messages.join(',')
+    end
 
   end
 end
