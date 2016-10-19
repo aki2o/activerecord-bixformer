@@ -230,6 +230,26 @@ class SamplePlan
   end
 
 
+  # [bixformer_sort_indexes] エクスポート時に、出力データ内の属性の出力順の定義
+  #
+  #   - ハッシュを返すProcオブジェクトかメソッド名/シンボルで指定
+  #   - 出力順を整数で指定。それの昇順で出力される
+  #   - 未定義の場合、 bixformer_entry で定義された全属性数（ attributes に指定されたハッシュのキーの合計 ）になる
+  #   - 出力順が同じ場合、 bixformer_entry の定義順になる
+  #
+  bixformer_sort_indexes -> do
+    {
+      # 投稿のタイトルを1番先に出力
+      posts: {
+        title: 1
+      },
+
+      # 次はユーザ名
+      name: 2
+    }
+  end
+
+
   # [bixformer_translation_config] インポート/エクスポートで行われる translation の設定の定義
   #
   #   - CSVでは
@@ -327,9 +347,19 @@ Model は各データ形式毎に異なる処理が必要になるため、デ�
     * has_one な関連モデル用。 has_many な関連モデルには使えない
 * indexed
     * has_many な関連モデル用。 has_one な関連モデルには使えない
+    * 関連レコード群に 1 から順に index を割当てて、それによってレコードを特定する
     * `size` オプションでインポート/エクスポートするサイズを指定
     * 属性の translation は `投稿%{index}のタイトル` のように指定
-    * モデルの translation は `ユーザ%{index}の` のように指定（関連モデルがさらに indexed だった場合に使われます）
+    * モデルの translation は `ユーザ%{index}の` のように指定（関連モデルがさらに has_many だった場合に使われます）
+* mapped
+    * has_many な関連モデル用。 has_one な関連モデルには使えない
+    * 関連レコード群が、特定の属性の値によって特定できる（自身の foreign_key と、その属性で unique な）場合に使える
+    * `key` オプションに、その属性名を指定
+    * `in` オプションに、関連レコード群の `key` オプションの属性値を配列で指定
+    * 属性の translation は `投稿の種別%{key}` のように指定
+    * モデルの translation は `投稿の種別%{key}の` のように指定（関連モデルがさらに has_many だった場合に使われます）
+    * `translate` オプションで、 translation の `key` 引数の値を変更可能
+        * `key` オプションの属性値が引数になる。 translation の `key` 引数に渡す値を返すこと
 
 ### 本フレームワークに定義されたAttribute一覧
 
@@ -339,19 +369,36 @@ Attribute は、基本的にデータ形式に依らず、使用可能な想定�
     * エクスポートでは `to_s` し、インポートでは `strip` して `presence` する
 * boolean
     * `true` / `false` オプションに、それぞれに対応する文字列を指定。デフォルトは、 `"true"` / `"false"`
-    * インポート時、合致しない値は `nil` になる
+    * インポート時、合致しない値だった場合、 `raise` オプションが `true` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
 * date
     * `format` オプションで、 `Date::DATE_FORMATS` のキーを指定。デフォルトは、 `default`
-    * インポート時、合致しない値はエラーになる
+    * インポート時、合致しない値だった場合、 `raise` オプションが `true` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
+* integer
+    * エクスポートでは `to_s` し、インポートでは `to_i` する
+    * `greater_than` / `greater_than_or_equal_to` / `less_than` / `less_than_or_equal_to` オプションで、インポートする範囲指定が可能。
+    * インポート時、合致しない値だった場合、 `raise` オプションが `true` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
 * time
     * `format` オプションで、 `Time::DATE_FORMATS` のキーを指定。デフォルトは、 `default`
-    * インポート時、合致しない値はエラーになる
+    * インポート時、合致しない値だった場合、 `raise` オプションが `true` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
 * booletania
     * 詳細は、 https://github.com/ryoff/booletania
-    * インポート時、合致しない値は `nil` になる
+    * インポート時、合致しない値だった場合、 `raise` オプションが `true` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
 * enumerize
     * 詳細は、 https://github.com/brainspec/enumerize
-    * インポート時、合致しない値はエラーになる
+    * インポート時、合致しない値だった場合、 `raise` オプションが `e` ならエラーに、 `false` なら nil になる。デフォルトは、 `true`
+* formatted_foreign_key
+    * belongs_to な関連レコードを id でない値で扱うことができる
+    * 以下のオプションがある
+        * `formatter` (必須) : エクスポート時の出力値を 属性名/メソッド名/Proc で指定
+            * Procの場合、出力対象のActiveRecordインスタンスが引数となる
+        * `parser` : インポート時の関連レコードの検索条件を返すProcを指定。デフォルトは、 `{ #{formatter} => #{インポート値} }`
+        * `scope` : インポート時の関連レコードを検索するスコープを scope名/Proc で指定。デフォルトは、 `対象モデル.all`
+        * `find_by` : インポート時の関連レコードを検索するメソッドを メソッド名/Proc で指定。デフォルトは、 `find_by`
+            * Procの場合、 `scope` オプションの戻り値、 `parser` の戻り値が引数となり、
+            * 関連レコードが検索で見つかった場合は、対象のActiveRecordインスタンスを返すこと
+        * `create` : インポート時、関連レコードが見つからない場合、対応する関連レコードを作成するかどうかを指定。デフォルトは、 `false`
+        * `creator` : インポート時、関連レコードを作成するメソッドを メソッド名/Proc で指定。デフォルトは、 `save`
+            * Procの場合、 buildされたActiveRecordインスタンスが引数となる。それを保存すること。
 * override
     * モデルに処理を委譲する
     * モデルに `override_import_属性名` / `override_export_属性名` を定義すること
