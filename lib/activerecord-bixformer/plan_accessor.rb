@@ -47,7 +47,10 @@ module ActiveRecord
           config_value.extract_options!
 
           # Arrayなら、要素は文字列化しておく
-          config_value = config_value.map { |v| v.to_s }
+          config_value = config_value.map(&:to_s)
+        elsif config_name != :entry && config_value.is_a?(::Hash)
+          # 子要素の設定を排除
+          config_value = config_value.except(*model.associations.map(&:name))
         end
 
         config_value || default_value

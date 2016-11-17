@@ -198,12 +198,15 @@ class SamplePlan
     {
       # 対象モデル（上の例なら user ）は、現在処理対象になっている group に属している
       group_id: current_group.id
-      
+
+      # 関連モデルに対する指定
+      # 関連モデルの場合は、親レコードの foreign_key（上記の場合、 user_id ）も自動で加わります
+      posts: {
+        private: true
+      }
+
       # インポートデータに primary_key や bixformer_unique_attributes がある場合、
       # 更新レコードをデータベース検索しますが、その際にも条件に追加されます
-      
-      # 関連モデルの場合は、この設定の有無に関わらず、親レコードの foreign_key が使用されるため、
-      # 関連モデルへの指定はできません
       
       # primary_key が指定されているのに、データベース検索に失敗した場合には、
       # ActiveRecord::RecordNotFound 例外が raise されます

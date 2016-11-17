@@ -37,10 +37,7 @@ module ActiveRecord
       end
 
       def set_required_condition
-        # 設定するのはルートの場合のみ
-        return if @model.parent
-
-        @model_attributes.merge!(@plan.value_of(:required_condition))
+        @model_attributes.merge!(@plan.pickup_value_for(@model, :required_condition, {}))
       end
 
       def set_parent_foreign_key
@@ -83,13 +80,14 @@ module ActiveRecord
         return nil unless uniqueness_condition
 
         # 更新対象のレコードを正しく特定できているか確認するための検証条件を取得
-        required_condition = if @model.parent
-                               key = @model.parent_foreign_key
+        required_condition = @plan.pickup_value_for(@model, :required_condition, {})
 
-                               { key => @model_attributes[key] }
-                             else
-                               @plan.value_of(:required_condition)
-                             end
+        # 親がいる場合は、親のID属性を検証条件に追加
+        if @model.parent
+          key = @model.parent_foreign_key
+
+          required_condition[key] = @model_attributes[key]
+        end
 
         # 検証条件は、必ず値がなければならない
         return nil if required_condition.any? { |_k, v| ! presence_value?(v) }
