@@ -197,6 +197,8 @@ module ActiveRecord
         end
 
         def make_each_association_import_value(values, &block)
+          return values unless presence_value?(values)
+
           self_record_id = values[activerecord_constant.primary_key]
 
           run_bixformer_callback :import, type: :association do
