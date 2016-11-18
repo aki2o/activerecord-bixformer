@@ -89,5 +89,21 @@ describe ActiveRecord::Bixformer::To::Csv do
 
       it { is_expected.to eq expect_value }
     end
+
+    context "skip_export" do
+      let(:entry) do
+        SampleEntry.user_all_using_indexed_association.tap do |o|
+          o[:attributes][:account] = [:string, skip_export: true]
+        end
+      end
+
+      let(:expect_value) do
+        [
+          "#{ar.id}",nil,ar.joined_at.to_s(:ymdhms),"Taro Sample","",24,"#{ar.posts[0].id}","Hello!","Now on show","No","Foo","Fuga","#{ar.posts[1].id}","","Write in Process","Yes",nil,nil,nil,nil,nil,nil,nil,nil
+        ]
+      end
+
+      it { is_expected.to eq expect_value }
+    end
   end
 end

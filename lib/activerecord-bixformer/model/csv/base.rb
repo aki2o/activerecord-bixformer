@@ -45,7 +45,7 @@ module ActiveRecord
             values = run_bixformer_callback :export, type: :attribute do
               # has_one でしか使わない想定なので record_or_relation は ActiveRecord::Base のはず
               @attributes.map do |attr|
-                attribute_value = if record_or_relation
+                attribute_value = if record_or_relation && ! attr.options[:skip_export]
                                     run_bixformer_callback :export, on: attr.name do
                                       attr.export(record_or_relation)
                                     end

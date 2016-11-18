@@ -151,6 +151,8 @@ module ActiveRecord
 
           run_bixformer_callback :import, type: :attribute do
             @attributes.each do |attr|
+              next if attr.options[:skip_import]
+
               attribute_value = begin
                                   run_bixformer_callback :import, on: attr.name do
                                     block.call(attr)

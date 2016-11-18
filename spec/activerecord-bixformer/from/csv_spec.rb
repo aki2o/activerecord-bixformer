@@ -5,13 +5,14 @@ describe ActiveRecord::Bixformer::From::Csv do
   let(:plan) { SampleUserPlan.new(plan_options) }
   let(:plan_options) do
     {
-      entry: SampleEntry.user_all_using_indexed_association,
+      entry: entry,
       preferred_skip_attributes: preferred_skip_attributes,
       unique_attributes: unique_attributes,
       required_condition: required_condition
     }
   end
 
+  let(:entry) { SampleEntry.user_all_using_indexed_association }
   let(:preferred_skip_attributes) { [] }
   let(:unique_attributes) { [] }
   let(:required_condition) { {} }
@@ -298,6 +299,27 @@ EOS
             { name: "Hoge", memo: "first tag" },
             { name: "Fuga", memo: nil },
             { name: "Foo", memo: "last tag" }
+          ]
+        }.with_indifferent_access
+      end
+
+      it { is_expected.to eq expect_value }
+    end
+
+    context "skip_import" do
+      let(:entry) do
+        SampleEntry.user_all_using_indexed_association.tap do |o|
+          o[:attributes][:account] = [:string, skip_import: true]
+        end
+      end
+
+      let(:expect_value) do
+        {
+          joined_at: Time.new(2016, 9, 1, 15, 31, 21, "+09:00"),
+          profile_attributes: { name: "Taro Import", email: nil, age: 13 },
+          posts_attributes: [
+            { content: "Hello!", status: "published", secret: false, tags_attributes: [{name: "Foo"}, {name: "Fuga"}] },
+            { content: "Good bye!", status: "wip", secret: true, tags_attributes: [] }
           ]
         }.with_indifferent_access
       end
