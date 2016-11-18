@@ -58,7 +58,8 @@ EOS
     end
 
     context "mapped" do
-      let(:plan) { SamplePostPlan.new(entry: SampleEntry.post_using_mapped_tag) }
+      let(:plan) { SamplePostPlan.new(entry: entry) }
+      let(:entry) { SampleEntry.post_using_mapped_tag }
 
       let(:csv_row) do
         csv_data = <<EOS
@@ -80,6 +81,16 @@ EOS
         end
 
         it { is_expected.to be_falsy }
+
+        context "verified_csv_titles" do
+          let(:entry) do
+            SampleEntry.post_using_mapped_tag.tap do |o|
+              o[:associations][:tags][:type].last.merge!(verified_csv_titles: [])
+            end
+          end
+
+          it { is_expected.to be_truthy }
+        end
       end
     end
   end
