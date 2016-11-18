@@ -42,6 +42,10 @@ module ActiveRecord
           private
 
           def do_export(record_or_relation)
+            if record_or_relation.is_a?(::ActiveRecord::Relation)
+              record_or_relation = record_or_relation.where(@plan.pickup_value_for(self, :required_condition, {}))
+            end
+
             values = run_bixformer_callback :export, type: :attribute do
               # has_one でしか使わない想定なので record_or_relation は ActiveRecord::Base のはず
               @attributes.map do |attr|
