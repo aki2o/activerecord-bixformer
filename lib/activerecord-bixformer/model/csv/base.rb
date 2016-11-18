@@ -42,10 +42,6 @@ module ActiveRecord
           private
 
           def do_export(record_or_relation)
-            if record_or_relation.is_a?(::ActiveRecord::Relation)
-              record_or_relation = record_or_relation.where(@plan.pickup_value_for(self, :required_condition, {}))
-            end
-
             values = run_bixformer_callback :export, type: :attribute do
               # has_one でしか使わない想定なので record_or_relation は ActiveRecord::Base のはず
               @attributes.map do |attr|
@@ -61,13 +57,21 @@ module ActiveRecord
 
             run_bixformer_callback :export, type: :association do
               @associations.inject(values) do |each_values, association|
-                association_value = if record_or_relation
-                                      run_bixformer_callback :export, on: association.name do
-                                        record_or_relation.__send__(association.name)
-                                      end
-                                    end
+                association_value =
+                  if record_or_relation
+                    run_bixformer_callback :export, on: association.name do
+                      association_record_or_relation = record_or_relation.__send__(association.name)
 
-                each_values.merge(association.export(association_value))
+                      if association_record_or_relation.is_a?(::ActiveRecord::Relation)
+                        association_record_or_relation =
+                          association_record_or_relation.where(@plan.pickup_value_for(association, :required_condition, {}))
+                      end
+
+                      association.export(association_record_or_relation)
+                    end
+                  end
+
+                each_values.merge(association_value || {})
               end
             end
           end
